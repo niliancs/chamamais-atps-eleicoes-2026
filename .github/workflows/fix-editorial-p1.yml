@@ -1,0 +1,165 @@
+name: Fix editorial P1 issues
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-editorial-p1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Apply editorial P1 corrections
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # CANDIDATURAS
+          p = Path('candidaturas/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+            '<p><b>Escopo do painel:</b> Câmara dos Deputados e Senado Federal. Renato Roseno ocupa mandato estadual, mas disputa deputado federal e, por isso, integra o foco principal. As demais candidaturas estaduais permanecem registradas apenas na documentação de apoio do levantamento e na tabela abaixo.</p>':
+            '<p><b>Escopo do painel:</b> foco principal em Câmara dos Deputados e Senado Federal, com uma candidatura distrital incluída excepcionalmente: Raphael Sebba, pelo vínculo direto com a carreira de ATPS. Renato Roseno ocupa mandato estadual, mas disputa deputado federal e, por isso, integra o foco principal. As demais candidaturas estaduais permanecem registradas apenas na documentação de apoio do levantamento e na tabela abaixo.</p>',
+
+            '<p>PT e PSOL integram o recorte de esquerda. Carlos Minc é identificado pela trajetória de esquerda socioambiental descrita em sua biografia. Raphael Sebba recebe classificação socioambiental preliminar pelas propostas documentadas. Reginaldo Veras aparece como centro-esquerda, com confiança moderada, considerando sua inserção no PV/FE Brasil e atuação em educação e serviço público.</p>':
+            '<p>O recorte político reúne candidaturas classificadas analiticamente como esquerda ou centro-esquerda. A classificação considera filiação e federação no registro eleitoral, documentos programáticos dos partidos e trajetória pública documentada; não é um campo oficial do TSE e não transforma filiação partidária em prova de apoio à pauta. PT, PCdoB, PSOL, REDE, PDT, PSB e PV aparecem no recorte. Quando a posição individual exige contextualização, a ficha explicita a base da classificação. Carlos Minc, Raphael Sebba e Reginaldo Veras mantêm notas individuais por trajetória e propostas.</p>',
+
+            '<p>Esta atualização incorpora a EMP 48/2025, evidências adicionais da Câmara, correções de categoria em fichas já existentes e candidaturas novas de esquerda e centro-esquerda vinculadas por ato formal.</p>':
+            '<p>Esta atualização incorpora a Emenda 48 ao PL 1466/2025 (EMP 48/2025), evidências adicionais da Câmara, correções de categoria em fichas já existentes e candidaturas novas de esquerda e centro-esquerda vinculadas por ato formal.</p>',
+
+            '<p>Assinar a EMP 48/2025 comprova ação formal sobre a carreira de ATPS, mas não é tratado como prova automática de apoio ao cadastro de reserva, ao CF3 ou ao pedido +500.</p>':
+            '<p>Assinar a EMP 48/2025 comprova ação formal sobre a carreira de ATPS, mas não é tratado como prova automática de apoio ao cadastro de reserva, ao terceiro Curso de Formação (CF3) ou ao pedido de 500 nomeações adicionais (+500).</p>',
+
+            '<tr><td>PL / PEC / emenda</td><td>Proposta de lei, mudança constitucional ou alteração em um texto. Consulte o andamento para saber seu resultado.</td></tr>':
+            '<tr><td>PL / PEC / emenda</td><td>Proposta de lei, mudança constitucional ou alteração em um texto. Consulte o andamento para saber seu resultado.</td></tr><tr><td>EMP 48/2025 / CF3 / +500</td><td>Emenda 48 ao PL 1466/2025; terceiro Curso de Formação; pedido de 500 nomeações adicionais.</td></tr>',
+
+            'A assinatura comprova ação formal sobre a carreira de ATPS; não comprova, isoladamente, apoio ao cadastro de reserva, ao CF3 ou ao pedido +500.':
+            'Ato sobre a carreira; não comprova, por si só, apoio ao cadastro de reserva.',
+
+            'Condição documentada pelo ato; exercício atual não rechecado individualmente neste levantamento':
+            'Cargo comprovado na data do ato; situação posterior não verificada nesta ficha',
+
+            'Classificação analítica do recorte editorial; não é um campo do TSE. O recorte inclui candidaturas de esquerda e centro-esquerda.':
+            'Classificação analítica usada para organizar o painel; não é informação oficial do TSE.',
+
+            'A responsável pelo levantamento informa que não concorre; nenhuma candidatura foi localizada nos arquivos TSE consultados.':
+            'Nenhuma candidatura foi localizada nos arquivos do TSE consultados.',
+
+            'Sem histórico legislativo comparável localizado. A condição de ATPS identifica sua trajetória profissional; compromissos específicos com a convocação do cadastro de reserva ainda não têm documento público individualizado nesta ficha.':
+            'Sem histórico legislativo comparável localizado. Raphael Sebba é ATPS; esta ficha ainda não documenta compromisso específico com a convocação do cadastro de reserva.',
+
+            'Informação biográfica fornecida pela responsável pelo levantamento em 10/09/2026. O TSE informa a ocupação genérica de servidor público federal; a comprovação documental pública do cargo específico não foi concluída neste levantamento.':
+            'Raphael Sebba é Analista Técnico de Políticas Sociais (ATPS). O TSE registra sua ocupação na categoria geral “servidor público federal”.',
+
+            '<p><b>Informação biográfica de Raphael Sebba:</b> sua condição de ATPS foi informada pela responsável pelo levantamento nesta revisão. O TSE registra “servidor público federal”; esse campo não identifica a carreira específica. A origem e o limite da verificação estão preservados na ficha.</p>':
+            '<p><b>Raphael Sebba:</b> é Analista Técnico de Políticas Sociais (ATPS). O TSE registra sua ocupação na categoria geral “servidor público federal”, que não detalha a carreira específica.</p>',
+
+            'Analista Técnico de Políticas Sociais, conforme informação recebida da responsável pelo levantamento. Raphael Sebba é a exceção distrital pelo vínculo com a carreira de ATPS. Apresenta propostas de planejamento urbano, proteção do Cerrado e adaptação climática.':
+            'Analista Técnico de Políticas Sociais (ATPS). Raphael Sebba é a exceção distrital pelo vínculo direto com a carreira. Apresenta propostas de planejamento urbano, proteção do Cerrado e adaptação climática.',
+
+            'Informação biográfica fornecida pela responsável pelo levantamento em 10/09/2026. O TSE informa a ocupação genérica de servidor público federal; a comprovação documental pública do cargo específico não foi concluída neste levantamento.':
+            'Condição profissional de ATPS consolidada no levantamento; o TSE registra a ocupação geral de servidor público federal.',
+
+            'Única candidatura distrital incluída, pelo vínculo com a carreira de ATPS informado pela responsável pelo levantamento.':
+            'Única candidatura distrital incluída, pelo vínculo direto com a carreira de ATPS.'
+          }
+
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'Candidaturas: texto esperado não encontrado: {old[:120]!r}')
+              s = s.replace(old, new)
+
+          p.write_text(s, encoding='utf-8')
+
+          # FUNDAMENTOS
+          p = Path('fundamentos/index.html')
+          s = p.read_text(encoding='utf-8')
+          fund_repl = {
+            'A apresentação histórica do INPE pôde ser lida pelo serviço de consulta, mas o download local retornou erro. A referência exata e a edição estão preservadas.':
+            'A apresentação histórica do INPE pôde ser consultada em visualização online; o acesso direto ao arquivo apresentou instabilidade. A referência exata e a edição estão preservadas.',
+            'Texto extraído pelo serviço de consulta; download local retornou 403. Séries 2019–2023.':
+            'Documento consultado em visualização online; o acesso direto ao arquivo apresentou instabilidade. Séries 2019–2023.',
+            'Corte factual: 10/09/2026 · identidade e infraestrutura harmonizadas em 11/09/2026.':
+            'Corte factual: 10/09/2026.'
+          }
+          for old, new in fund_repl.items():
+              if old not in s:
+                  raise SystemExit(f'Fundamentos: texto esperado não encontrado: {old!r}')
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+
+          # POR QUE LULA
+          p = Path('apoio-lula/index.html')
+          s = p.read_text(encoding='utf-8')
+          old = 'As fontes documentam fatos, medidas, propostas e declarações; a conclusão política pertence a esta peça. Identidade e infraestrutura harmonizadas em 11/09/2026.'
+          new = 'As fontes documentam fatos, medidas, propostas e declarações; a conclusão política pertence a esta peça.'
+          if old not in s:
+              raise SystemExit('Por que Lula: rodapé interno esperado não encontrado')
+          s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: QA editorial P1
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          cand = Path('candidaturas/index.html').read_text(encoding='utf-8')
+          fund = Path('fundamentos/index.html').read_text(encoding='utf-8')
+          lula = Path('apoio-lula/index.html').read_text(encoding='utf-8')
+          errors=[]
+
+          required = [
+            'foco principal em Câmara dos Deputados e Senado Federal, com uma candidatura distrital incluída excepcionalmente: Raphael Sebba',
+            'PT, PCdoB, PSOL, REDE, PDT, PSB e PV aparecem no recorte',
+            'Emenda 48 ao PL 1466/2025 (EMP 48/2025)',
+            'terceiro Curso de Formação (CF3)',
+            'pedido de 500 nomeações adicionais (+500)',
+            'EMP 48/2025 / CF3 / +500',
+            'Ato sobre a carreira; não comprova, por si só, apoio ao cadastro de reserva.',
+            'Raphael Sebba é ATPS; esta ficha ainda não documenta compromisso específico com a convocação do cadastro de reserva.',
+            '<b>Raphael Sebba:</b> é Analista Técnico de Políticas Sociais (ATPS).'
+          ]
+          for x in required:
+              if x not in cand: errors.append('Candidaturas ausente: '+x)
+
+          forbidden_cand = [
+            'Câmara dos Deputados e Senado Federal. Renato Roseno ocupa mandato estadual',
+            'PT e PSOL integram o recorte de esquerda.',
+            'A assinatura comprova ação formal sobre a carreira de ATPS; não comprova, isoladamente, apoio ao cadastro de reserva, ao CF3 ou ao pedido +500.',
+            'Condição documentada pelo ato; exercício atual não rechecado individualmente neste levantamento',
+            'Classificação analítica do recorte editorial',
+            'responsável pelo levantamento',
+            'a comprovação documental pública do cargo específico não foi concluída neste levantamento'
+          ]
+          for x in forbidden_cand:
+              if x in cand: errors.append('Candidaturas ainda contém: '+x)
+
+          for x in ['download local retornou erro','download local retornou 403','identidade e infraestrutura harmonizadas']:
+              if x in fund: errors.append('Fundamentos ainda contém: '+x)
+          if 'Identidade e infraestrutura harmonizadas' in lula:
+              errors.append('Por que Lula ainda contém linguagem interna de harmonização')
+
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print('PASS: correções editoriais P1 aplicadas; linguagem interna removida; Sebba tratado como ATPS.')
+          PY
+
+      - name: Regenerate checksums
+        run: |
+          sha256sum index.html apoio-lula/index.html fundamentos/index.html candidaturas/index.html assets/styles.css README_RELEASE.md CHANGELOG.md QA_REPORT_FINAL.md > SHA256SUMS.txt
+
+      - name: Commit corrections
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add candidaturas/index.html fundamentos/index.html apoio-lula/index.html SHA256SUMS.txt
+          git commit -m 'Fix editorial P1 issues and clarify Sebba ATPS status'
+          git push origin main
