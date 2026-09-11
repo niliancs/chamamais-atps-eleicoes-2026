@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chama + ATPS — Posicionamento eleitoral e documentos</title>
+  <meta name="description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, publicação em 13/09/2026.">
+  <!-- SEO/OG: substituir {{BASE_URL}} pelo domínio final antes do deploy -->
+  <link rel="canonical" href="{{BASE_URL}}/">
+  <meta property="og:title" content="Chama + ATPS — Posicionamento eleitoral e documentos">
+  <meta property="og:description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, publicação em 13/09/2026.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{BASE_URL}}/">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* ─── Landing · estilos de página ─────────────────────────── */
+
+    .lp-header {
+      background: var(--cm-card);
+      border-bottom: 1px solid var(--cm-line);
+    }
+    .lp-header .inner {
+      max-width: 720px;
+      margin: auto;
+      padding: 3rem 20px 3.5rem;
+    }
+    @media (min-width: 600px) {
+      .lp-header .inner { padding: 4rem 32px 4.5rem; }
+    }
+    .lp-header h1 {
+      margin: 1rem 0 0;
+      font-size: clamp(1.5rem, 3vw + .75rem, 2.25rem);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--cm-navy);
+    }
+    .lp-header .subtitle {
+      margin: 1rem 0 0;
+      font-size: 1rem;
+      color: var(--cm-blue);
+      line-height: 1.6;
+    }
+    @media (min-width: 600px) { .lp-header .subtitle { font-size: 1.125rem; } }
+    .lp-header .dates {
+      margin: 1.25rem 0 0;
+      font-size: .875rem;
+      color: var(--cm-muted);
+    }
+    .lp-header .accent-bar {
+      margin: 2rem 0 0;
+      height: 4px;
+      width: 96px;
+      border-radius: 999px;
+      background: var(--cm-turq);
+    }
+
+    /* ─── Corpo principal ─────────────────────────────────────── */
+    .lp-main {
+      max-width: 720px;
+      margin: auto;
+      padding: 3rem 20px;
+    }
+    @media (min-width: 600px) { .lp-main { padding: 4rem 32px; } }
+
+    /* ─── Nota de esclarecimento ──────────────────────────────── */
+    .nota-heading {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-heading { font-size: 1.5rem; } }
+
+    .nota-subheading {
+      margin: .5rem 0 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--cm-blue);
+    }
+    @media (min-width: 600px) { .nota-subheading { font-size: 1.125rem; } }
+
+    .nota-opening {
+      margin: 2rem 0 0;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-opening { font-size: 1.0625rem; } }
+
+    .nota-intro {
+      margin: 1.5rem 0 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-intro { font-size: 1.0625rem; } }
+
+    .nota-list {
+      list-style: none;
+      margin: 2rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+    .nota-item {
+      border-left: 2px solid var(--cm-turq);
+      padding-left: 1.25rem;
+    }
+    @media (min-width: 600px) { .nota-item { padding-left: 1.5rem; } }
+    .nota-item h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-item h3 { font-size: 1.1875rem; } }
+    .nota-item h3 .num { color: var(--cm-blue); }
+
+    .nota-item .paragraphs {
+      margin: .75rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .nota-item p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cm-navy);
+    }
+    .nota-item ul {
+      margin: .25rem 0;
+      padding-left: .25rem;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+    .nota-item ul li {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cm-navy);
+    }
+
+    .nota-close {
+      margin: 2.5rem 0 0;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-close { font-size: 1.0625rem; } }
+
+    .nota-signature {
+      margin: 2rem 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+    }
+    .nota-signature p {
+      margin: 0;
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .nota-signature p { font-size: 1rem; } }
+    .nota-signature .sig-date {
+      font-weight: 400;
+      color: var(--cm-muted);
+    }
+
+    /* ─── Seção de documentos ─────────────────────────────────── */
+    .docs-section { margin-top: 4rem; }
+    @media (min-width: 600px) { .docs-section { margin-top: 5rem; } }
+
+    .docs-section h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .docs-section h2 { font-size: 1.5rem; } }
+
+    .docs-desc {
+      margin: .75rem 0 0;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--cm-muted);
+      max-width: 520px;
+    }
+
+    .doc-list {
+      list-style: none;
+      margin: 2rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .doc-card {
+      display: block;
+      border: 1px solid var(--cm-line);
+      border-radius: 12px;
+      background: var(--cm-card);
+      padding: 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s;
+    }
+    @media (min-width: 600px) { .doc-card { padding: 1.5rem 1.75rem; } }
+    .doc-card:hover { border-color: var(--cm-blue); }
+    .doc-card:focus-visible {
+      outline: 3px solid var(--cm-yellow);
+      outline-offset: 2px;
+      border-color: var(--cm-blue);
+    }
+
+    .doc-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .doc-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--cm-navy);
+      text-decoration: underline;
+      text-decoration-color: var(--cm-turq);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+    }
+    @media (min-width: 600px) { .doc-card h3 { font-size: 1.1875rem; } }
+    .doc-card:hover h3 { color: var(--cm-blue); }
+
+    .doc-arrow {
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--cm-blue);
+      font-size: 1.125rem;
+      line-height: 1;
+    }
+
+    .doc-card .doc-body {
+      margin: .75rem 0 0;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--cm-navy);
+    }
+
+    .doc-card .doc-meta {
+      margin: .875rem 0 0;
+      font-size: .8125rem;
+      font-weight: 500;
+      color: var(--cm-muted);
+    }
+
+    /* ─── Nota metodológica ───────────────────────────────────── */
+    .metodologia-section { margin-top: 4rem; }
+    @media (min-width: 600px) { .metodologia-section { margin-top: 5rem; } }
+
+    .metodologia-section h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .metodologia-section h2 { font-size: 1.5rem; } }
+
+    .metodologia-box {
+      margin: 1.25rem 0 0;
+      border-radius: 12px;
+      background: var(--cm-cyan);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    @media (min-width: 600px) { .metodologia-box { padding: 1.5rem 1.75rem; } }
+    .metodologia-box p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--cm-navy);
+    }
+    @media (min-width: 600px) { .metodologia-box p { font-size: 1.0625rem; } }
+
+    /* ─── Rodapé ──────────────────────────────────────────────── */
+    .lp-footer {
+      border-top: 1px solid var(--cm-line);
+      background: var(--cm-card);
+    }
+    .lp-footer .inner {
+      max-width: 720px;
+      margin: auto;
+      padding: 2.5rem 20px;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    @media (min-width: 600px) { .lp-footer .inner { padding: 3rem 32px; } }
+    .lp-footer p {
+      margin: 0;
+      font-size: .875rem;
+      line-height: 1.6;
+      color: var(--cm-muted);
+    }
+    @media (min-width: 600px) { .lp-footer p { font-size: 1rem; } }
+    .lp-footer .footer-org {
+      font-weight: 500;
+      color: var(--cm-navy);
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+  <nav class="site-nav" aria-label="Navegação do microsite">
+    <div class="nav-inner">
+      <a href="./" class="nav-home" aria-current="page">Chama + ATPS</a>
+      <span class="nav-sep" aria-hidden="true">›</span>
+      <ul class="nav-links" role="list">
+        <li><a href="./apoio-lula/">Por que Lula</a></li>
+        <li><a href="./fundamentos/">Fundamentos</a></li>
+        <li><a href="./candidaturas/">Candidaturas</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="lp-header">
+    <div class="inner">
+      <p class="eyebrow">Eleições 2026</p>
+      <h1>Chama + ATPS — Posicionamento eleitoral e documentos</h1>
+      <p class="subtitle">Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026</p>
+      <p class="dates">Deliberação 09/09/2026 · publicação 13/09/2026</p>
+      <div class="accent-bar" aria-hidden="true"></div>
+    </div>
+  </header>
+
+  <main id="conteudo" class="lp-main">
+
+    <!-- ── Nota de esclarecimento ─────────────────────────────── -->
+    <section aria-labelledby="nota-titulo">
+      <h2 id="nota-titulo" class="nota-heading">Nota de esclarecimento</h2>
+      <p class="nota-subheading">Posicionamento eleitoral do #ChamaMaisATPS</p>
+
+      <p class="nota-opening">
+        A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de
+        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, após análise comparativa
+        dos planos de governo dos dois candidatos mais bem posicionados nas pesquisas eleitorais
+        para a Presidência da República, em 9 de setembro de 2026, por manifestar apoio à candidatura
+        de Lula à Presidência da República e a outras candidaturas selecionadas a partir de critérios
+        relacionados à defesa da democracia e das políticas sociais, ao fortalecimento da capacidade
+        do Estado, à valorização do serviço público federal e ao respeito ao princípio constitucional
+        do concurso público, previsto no art. 37, II, da Constituição Federal de 1988.
+      </p>
+
+      <p class="nota-intro">Esclarecemos que:</p>
+
+      <ol class="nota-list">
+
+        <li class="nota-item">
+          <h3><span class="num">1.</span> Representatividade</h3>
+          <div class="paragraphs">
+            <p>Esta decisão expressa o posicionamento da Comissão do Cadastro Reserva de ATPS do
+            CPNU 1. Não pressupõe unanimidade entre as pessoas integrantes do cadastro reserva,
+            não substitui suas escolhas individuais e não deve ser interpretada como manifestação
+            institucional de toda a carreira de ATPS, do Ministério da Gestão e da Inovação em
+            Serviços Públicos — MGI — ou da Andeps.</p>
+          </div>
+        </li>
+
+        <li class="nota-item">
+          <h3><span class="num">2.</span> Fundamentação</h3>
+          <div class="paragraphs">
+            <p>Uma decisão de apoio deve ser acompanhada de transparência sobre seus fundamentos.
+            Por isso, a análise das candidaturas considera dimensões distintas, entre elas:</p>
+            <ul>
+              <li>a) atuação anterior comprovada;</li>
+              <li>b) propostas eleitorais ou programáticas publicadas;</li>
+              <li>c) compromissos publicamente assumidos.</li>
+            </ul>
+            <p>Essas dimensões não são tratadas como equivalentes.</p>
+          </div>
+        </li>
+
+        <li class="nota-item">
+          <h3><span class="num">3.</span> Verificação e transparência</h3>
+          <div class="paragraphs">
+            <p>As informações utilizadas são acompanhadas, sempre que possível, de fonte, data e
+            link, permitindo distinguir ato realizado, apoio declarado, compromisso, proposta
+            eleitoral e simples interlocução.</p>
+            <p>A situação eleitoral das candidaturas é conferida em fontes oficiais do TSE, e os
+            atos parlamentares são verificados nas bases oficiais das respectivas casas
+            legislativas.</p>
+            <p>Os materiais de fundamentação serão disponibilizados para consulta pública e
+            atualizados por versão. Eventuais erros, imprecisões ou novas evidências serão
+            incorporados de forma explícita, com registro das alterações.</p>
+          </div>
+        </li>
+
+        <li class="nota-item">
+          <h3><span class="num">4.</span> Levantamento parlamentar e apoio eleitoral</h3>
+          <div class="paragraphs">
+            <p>O levantamento de candidaturas e atuação parlamentar é um instrumento factual de
+            consulta. A presença de uma pessoa nesse levantamento não significa, por si só, que
+            sua candidatura seja apoiada pela Comissão.</p>
+            <p>Da mesma forma, um ato relacionado à carreira de Analista Técnico de Políticas
+            Sociais não equivale automaticamente a apoio ao Cadastro Reserva, ao CF3, ao pedido
+            de novas nomeações ou a qualquer outra reivindicação específica do movimento.</p>
+          </div>
+        </li>
+
+        <li class="nota-item">
+          <h3><span class="num">5.</span> Limites do apoio e autonomia da pauta institucional</h3>
+          <div class="paragraphs">
+            <p>O posicionamento eleitoral da Comissão do Cadastro Reserva de ATPS do CPNU 1,
+            no âmbito do Movimento #ChamaMaisATPS, decorre de avaliação política e programática
+            construída a partir de critérios públicos, do histórico das candidaturas e de suas
+            posições sobre políticas sociais, capacidade estatal e serviço público.</p>
+            <p>Ele não resulta de promessa, compromisso ou negociação de nomeações, nem condiciona
+            o apoio expresso pela Comissão à obtenção de qualquer vantagem para integrantes do
+            cadastro de reserva.</p>
+            <p>Apoio eleitoral não constitui garantia, promessa ou acordo de convocação, nomeação
+            ou provimento de cargos.</p>
+            <p>Expectativas do cadastro reserva não podem e não serão apresentadas como
+            compromissos assumidos por candidaturas sem documentação que os comprove.</p>
+            <p>A defesa do provimento da carreira de ATPS é uma agenda institucional anterior ao
+            processo eleitoral, sustentada por dados, documentos oficiais e necessidades de força
+            de trabalho identificadas na Administração Pública. Essa pauta continuará sendo
+            defendida institucionalmente perante os Poderes Públicos, independentemente do
+            calendário eleitoral.</p>
+          </div>
+        </li>
+
+        <li class="nota-item">
+          <h3><span class="num">6.</span> Caráter voluntário da manifestação</h3>
+          <div class="paragraphs">
+            <p>A manifestação eleitoral do #ChamaMaisATPS é voluntária e não envolve pagamento,
+            recompensa, benefício, contratação ou qualquer vantagem econômica oferecida por
+            candidaturas, partidos, federações, coligações ou terceiros em troca de divulgação ou
+            apoio.</p>
+            <p>O movimento não realizará impulsionamento pago nem contratação de disparo em massa
+            de conteúdo eleitoral.</p>
+          </div>
+        </li>
+
+      </ol>
+
+      <p class="nota-close">
+        A finalidade desta nota é dar publicidade à decisão do colegiado, delimitar quem ela
+        representa e tornar transparentes os critérios, limites e documentos utilizados em sua
+        fundamentação, com respeito à liberdade de escolha política de cada pessoa.
+      </p>
+
+      <div class="nota-signature">
+        <p>Comissão do Cadastro Reserva de ATPS — CPNU 1</p>
+        <p>Movimento #ChamaMaisATPS</p>
+        <p class="sig-date">Publicada em 13 de setembro de 2026</p>
+      </div>
+    </section>
+
+    <!-- ── Documentos e fundamentos ───────────────────────────── -->
+    <section class="docs-section" aria-labelledby="documentos-titulo">
+      <h2 id="documentos-titulo">Documentos e fundamentos</h2>
+      <p class="docs-desc">
+        Os três materiais abaixo estão disponíveis como páginas desta publicação.
+      </p>
+
+      <ul class="doc-list" role="list">
+        <li>
+          <a class="doc-card" href="./apoio-lula/">
+            <div class="doc-card-head">
+              <h3>Por que apoiamos Lula — infográfico</h3>
+              <span class="doc-arrow" aria-hidden="true">→</span>
+            </div>
+            <p class="doc-body">
+              Síntese visual dos argumentos que fundamentam o apoio à candidatura, com os temas
+              considerados pela Comissão.
+            </p>
+            <p class="doc-meta">Corte factual 10/09/2026</p>
+          </a>
+        </li>
+        <li>
+          <a class="doc-card" href="./fundamentos/">
+            <div class="doc-card-head">
+              <h3>Dossiê de fundamentos e fontes</h3>
+              <span class="doc-arrow" aria-hidden="true">→</span>
+            </div>
+            <p class="doc-body">
+              Documentação de referência com medidas, indicadores e propostas, acompanhados de
+              fonte, data de consulta e limites da pesquisa.
+            </p>
+            <p class="doc-meta">Corte factual 10/09/2026</p>
+          </a>
+        </li>
+        <li>
+          <a class="doc-card" href="./candidaturas/">
+            <div class="doc-card-head">
+              <h3>Levantamento de candidaturas e atuação parlamentar — v4.6 corrigido</h3>
+              <span class="doc-arrow" aria-hidden="true">→</span>
+            </div>
+            <p class="doc-body">
+              Instrumento factual de consulta sobre candidaturas e atos parlamentares, com
+              registro de fonte, data e link para cada informação.
+            </p>
+            <p class="doc-meta">
+              v4.6 — 69 candidaturas; 62 Câmara, 6 Senado e 1 distrital; corte factual
+              10/09/2026; QA funcional 11/09/2026
+            </p>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── Nota metodológica ──────────────────────────────────── -->
+    <section class="metodologia-section" aria-labelledby="metodologia-titulo">
+      <h2 id="metodologia-titulo">Nota metodológica</h2>
+      <div class="metodologia-box">
+        <p>
+          O levantamento parlamentar é factual e não deve ser interpretado automaticamente como
+          lista de candidaturas apoiadas pela Comissão.
+        </p>
+        <p>
+          Atuação formal, apoio declarado, compromisso, interlocução e proposta eleitoral são
+          categorias distintas. Medida realizada, resultado observado e proposta também não são
+          equivalentes.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="lp-footer">
+    <div class="inner">
+      <p class="footer-org">
+        Comissão do Cadastro Reserva de ATPS — CPNU 1 · Movimento #ChamaMaisATPS · Eleições 2026
+      </p>
+      <p>Publicação 13/09/2026</p>
+      <p>Documentos atualizados por versão; correções são registradas explicitamente.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
