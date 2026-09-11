@@ -1,0 +1,294 @@
+name: Fix public links and run link QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-public-links.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch public links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import html
+          import re
+
+          candidate = Path('candidaturas/index.html')
+          s = candidate.read_text(encoding='utf-8')
+
+          def replace_private_anchor(text, url, expected, suffix):
+              pattern = re.compile(r'<a\b(?=[^>]*\bhref="' + re.escape(url) + r'")[^>]*>(.*?)</a>', re.S)
+              matches = list(pattern.finditer(text))
+              if len(matches) != expected:
+                  raise SystemExit(f'Esperado {expected} links para {url}; encontrados {len(matches)}')
+              def repl(m):
+                  label = re.sub(r'<[^>]+>', '', m.group(1)).replace(' ↗', '').strip()
+                  return f'<span class="small" title="Fonte interna não publicada">{html.escape(label)} — {suffix}</span>'
+              return pattern.sub(repl, text)
+
+          s = replace_private_anchor(
+              s,
+              'https://drive.google.com/file/d/1nwy7rlQILHfwbOFicGondAUSm6QNiGoz/view',
+              23,
+              'acervo interno'
+          )
+          s = replace_private_anchor(
+              s,
+              'https://docs.google.com/document/d/1pYx8WxnDAvNl8e1E2GpET76184-zevux/edit',
+              7,
+              'registro interno'
+          )
+          s = replace_private_anchor(
+              s,
+              'https://drive.google.com/file/d/11Qm4d3fikmDeJhQje6u9tVPR-8j1l-D2/view',
+              1,
+              'documento preservado no acervo interno'
+          )
+
+          old_senado = 'https://legis.senado.gov.br/sdleg-getter/documento?dm=9715865'
+          new_senado = 'https://www25.senado.leg.br/web/atividade/materias/-/materia/164766'
+          if s.count(old_senado) != 1:
+              raise SystemExit(f'Link antigo do Senado: esperado 1, encontrado {s.count(old_senado)}')
+          s = s.replace(old_senado, new_senado, 1)
+
+          sei_url = 'https://colaboragov.sei.gov.br/sei/controlador_externo.php?acao=documento_conferir&id_orgao_acesso_externo=0'
+          old_sei = f'<a href="{sei_url}" target="_blank" rel="noopener noreferrer">Documento oficial ↗</a>'
+          new_sei = f'<a href="{sei_url}" target="_blank" rel="noopener noreferrer">Conferir autenticidade no SEI ↗</a>'
+          if s.count(old_sei) != 1:
+              raise SystemExit(f'Rótulo genérico do SEI: esperado 1, encontrado {s.count(old_sei)}')
+          s = s.replace(old_sei, new_sei, 1)
+
+          old_ric_1297 = 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2887743&filename=RIC 1297/2025'
+          new_ric_1297 = 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2887743'
+          old_ric_1649 = 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2895874&filename=RIC 1649/2025'
+          new_ric_1649 = 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2895874'
+          for old, new in [(old_ric_1297, new_ric_1297), (old_ric_1649, new_ric_1649)]:
+              if s.count(old) != 1:
+                  raise SystemExit(f'URL da Câmara esperada 1 vez: {old!r}; encontrada {s.count(old)}')
+              s = s.replace(old, new, 1)
+
+          candidate.write_text(s, encoding='utf-8')
+
+          tse = 'https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a'
+          old_pair = (
+              f'<span class="refs"><a href="{tse}" target="_blank" rel="noopener noreferrer">Planos de governo presidenciais no TSE Dados Abertos — pacote ZIP (contém programa de Lula)</a> · '
+              f'<a href="{tse}" target="_blank" rel="noopener noreferrer">Planos de governo presidenciais no TSE Dados Abertos — pacote ZIP (arquivo de Flávio: 2026BR280002551544_01.pdf)</a></span>'
+          )
+          new_pair = (
+              f'<span class="refs"><a href="{tse}" target="_blank" rel="noopener noreferrer">TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)</a></span>'
+          )
+          for fn in ['apoio-lula/index.html', 'fundamentos/index.html']:
+              p = Path(fn)
+              text = p.read_text(encoding='utf-8')
+              if text.count(old_pair) != 1:
+                  raise SystemExit(f'{fn}: par redundante de links TSE esperado 1 vez; encontrado {text.count(old_pair)}')
+              text = text.replace(old_pair, new_pair, 1)
+              p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Link-only regression QA
+        run: |
+          python - <<'PY'
+          from pathlib import Path, PurePosixPath
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit
+          import posixpath
+          import subprocess
+
+          files = [
+              Path('index.html'),
+              Path('apoio-lula/index.html'),
+              Path('fundamentos/index.html'),
+              Path('candidaturas/index.html'),
+          ]
+
+          class LinkParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = []
+                  self.ids = set()
+              def handle_starttag(self, tag, attrs):
+                  d = dict(attrs)
+                  if 'id' in d:
+                      self.ids.add(d['id'])
+                  if tag == 'a' and 'href' in d:
+                      self.links.append(d)
+
+          parsed = {}
+          for p in files:
+              parser = LinkParser()
+              parser.feed(p.read_text(encoding='utf-8'))
+              parsed[p] = parser
+
+          errors = []
+          warnings = []
+          internal_checked = 0
+          external = []
+
+          for p, parser in parsed.items():
+              base = p.parent
+              for a in parser.links:
+                  href = a['href']
+                  if ' ' in href:
+                      errors.append(f'{p}: espaço literal em href: {href}')
+                  if a.get('target') == '_blank':
+                      rel = set((a.get('rel') or '').split())
+                      if not {'noopener','noreferrer'}.issubset(rel):
+                          errors.append(f'{p}: target=_blank sem noopener+noreferrer: {href}')
+
+                  parts = urlsplit(href)
+                  if parts.scheme in ('http','https'):
+                      external.append(href)
+                      continue
+                  if parts.scheme or href.startswith('mailto:') or href.startswith('tel:'):
+                      continue
+
+                  path_part = parts.path
+                  frag = parts.fragment
+                  if not path_part:
+                      target = p
+                  else:
+                      raw = posixpath.normpath(posixpath.join(base.as_posix(), path_part))
+                      target = Path(raw)
+                      if href.endswith('/'):
+                          target = target / 'index.html'
+                  if path_part:
+                      internal_checked += 1
+                      if not target.exists():
+                          errors.append(f'{p}: link interno sem destino: {href} -> {target}')
+                          continue
+                  if frag and target in parsed and frag not in parsed[target].ids:
+                      errors.append(f'{p}: âncora inexistente: {href}')
+
+          cand = Path('candidaturas/index.html').read_text(encoding='utf-8')
+          forbidden = {
+              'posts privados do Drive': '1nwy7rlQILHfwbOFicGondAUSm6QNiGoz',
+              'ata interna editável': '1pYx8WxnDAvNl8e1E2GpET76184-zevux',
+              'PDF SEI privado': '11Qm4d3fikmDeJhQje6u9tVPR-8j1l-D2',
+              'domínio antigo Senado': 'legis.senado.gov.br',
+              'filename RIC 1297 com espaço': 'filename=RIC 1297/2025',
+              'filename RIC 1649 com espaço': 'filename=RIC 1649/2025',
+          }
+          for label, token in forbidden.items():
+              if token in cand:
+                  errors.append(f'candidaturas/index.html: referência residual — {label}')
+
+          required = {
+              'Senado estável': 'https://www25.senado.leg.br/web/atividade/materias/-/materia/164766',
+              'Câmara RIC 1297': 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2887743',
+              'Câmara RIC 1649': 'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2895874',
+              'Rótulo SEI preciso': 'Conferir autenticidade no SEI ↗',
+          }
+          for label, token in required.items():
+              if token not in cand:
+                  errors.append(f'candidaturas/index.html: correção ausente — {label}')
+
+          tse_label = 'TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)'
+          for fn in ['apoio-lula/index.html','fundamentos/index.html']:
+              text = Path(fn).read_text(encoding='utf-8')
+              if text.count(tse_label) != 1:
+                  errors.append(f'{fn}: rótulo unificado do pacote TSE deveria aparecer 1 vez; aparece {text.count(tse_label)}')
+
+          smoke_urls = [
+              'https://www25.senado.leg.br/web/atividade/materias/-/materia/164766',
+              'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2887743',
+              'https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=2895874',
+              'https://colaboragov.sei.gov.br/sei/controlador_externo.php?acao=documento_conferir&id_orgao_acesso_externo=0',
+              'https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a',
+          ]
+          smoke = []
+          for url in smoke_urls:
+              try:
+                  cp = subprocess.run(
+                      ['curl','-L','-sS','-A','Mozilla/5.0','--max-time','20','-o','/dev/null','-w','%{http_code}',url],
+                      text=True, capture_output=True, timeout=25
+                  )
+                  code = cp.stdout.strip() or '000'
+              except Exception as e:
+                  code = '000'
+              status = 'PASS' if code.isdigit() and 200 <= int(code) < 400 else ('FAIL' if code == '404' else 'WARN')
+              smoke.append((status, code, url))
+              if status == 'FAIL':
+                  errors.append(f'Smoke test 404: {url}')
+
+          total_links = sum(len(x.links) for x in parsed.values())
+          unique_external = len(set(external))
+          internal_sources = cand.count('title="Fonte interna não publicada"')
+          if internal_sources != 31:
+              errors.append(f'candidaturas/index.html: esperado 31 marcadores de fonte interna; encontrados {internal_sources}')
+
+          report = []
+          report.append('# QA de regressão — links do microsite #ChamaMaisATPS')
+          report.append('')
+          report.append('**Data:** 11/09/2026  ')
+          report.append('**Escopo:** somente links e destinos das quatro páginas públicas.')
+          report.append('')
+          report.append('## Resultado')
+          report.append('')
+          report.append(f'- Links examinados: **{total_links}**')
+          report.append(f'- Destinos externos únicos: **{unique_external}**')
+          report.append(f'- Links internos com caminho conferidos: **{internal_checked}**')
+          report.append(f'- Referências privadas convertidas em marcação de acervo interno: **{internal_sources}**')
+          report.append(f'- Erros: **{len(errors)}**')
+          report.append('')
+          report.append('## Correções verificadas')
+          report.append('')
+          report.append('- Exportação histórica do Chama+ATPS: links privados removidos; fonte mantida como acervo interno não publicado.')
+          report.append('- Registro interno da Comissão: links públicos para documento editável removidos.')
+          report.append('- PDF SEI 18001.001405/2026-68: link privado removido; referência documental preservada no texto.')
+          report.append('- REQ 63/2024-CI: destino alterado para a página estável da matéria no Senado.')
+          report.append('- Conferência SEI de Renato Roseno: rótulo alterado para explicitar que o destino é a tela de autenticação.')
+          report.append('- RIC 1297/2025 e RIC 1649/2025: parâmetros com espaços removidos das URLs de inteiro teor.')
+          report.append('- Quadro Lula × Flávio: o par redundante de links para o mesmo pacote do TSE foi unificado em um único link.')
+          report.append('')
+          report.append('## Smoke test dos destinos alterados')
+          report.append('')
+          report.append('| Status | HTTP | Destino |')
+          report.append('|---|---:|---|')
+          for status, code, url in smoke:
+              report.append(f'| {status} | {code} | `{url}` |')
+          report.append('')
+          report.append('## Regras de regressão')
+          report.append('')
+          report.append('- Nenhum `href` contém espaço literal.')
+          report.append('- Todos os links `target="_blank"` mantêm `rel="noopener noreferrer"`.')
+          report.append('- Todos os links internos com caminho resolvem para arquivo/rota existente.')
+          report.append('- Nenhum dos três IDs privados do Drive permanece em `candidaturas/index.html`.')
+          report.append('- O domínio antigo `legis.senado.gov.br` não permanece no código público.')
+          report.append('')
+          if warnings:
+              report.append('## Avisos')
+              report.extend(f'- {x}' for x in warnings)
+              report.append('')
+          if errors:
+              report.append('## Falhas')
+              report.extend(f'- {x}' for x in errors)
+          else:
+              report.append('**VEREDITO: PASS — nenhuma regressão de links detectada.**')
+
+          Path('QA_LINKS_20260911.md').write_text('\n'.join(report) + '\n', encoding='utf-8')
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          PY
+
+      - name: Regenerate release checksums
+        run: |
+          sha256sum index.html apoio-lula/index.html fundamentos/index.html candidaturas/index.html assets/styles.css README_RELEASE.md CHANGELOG.md QA_REPORT_FINAL.md > SHA256SUMS.txt
+
+      - name: Commit fixes and QA report
+        run: |
+          git config user.name 'Nílian Silva'
+          git config user.email 'niliancs@gmail.com'
+          git add candidaturas/index.html apoio-lula/index.html fundamentos/index.html QA_LINKS_20260911.md SHA256SUMS.txt
+          git commit -m 'Fix public evidence links and add link regression QA'
+          git push origin main
