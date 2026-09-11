@@ -1,6 +1,6 @@
 # README — Release #ChamaMaisATPS · Eleições 2026
 
-Versão: **v4.6-release-20260911**
+Versão: **v4.6-release-20260911-v2 · produção**
 Preparado em: 11/09/2026
 Publicação prevista: 13/09/2026
 
@@ -27,24 +27,12 @@ release/
 
 ---
 
-## Pré-requisito antes do deploy: substituir {{BASE_URL}}
+## URL pública de produção
 
-**Todos os quatro HTMLs contêm o marcador `{{BASE_URL}}`** nas metatags de SEO/OG e nos links canônicos.
-Antes de publicar, substitua o marcador pelo domínio definitivo — por exemplo:
+**Base URL:** `https://chamamais-atps-eleicoes-2026.vercel.app`
 
-```bash
-# Linux/macOS — substituição em todos os arquivos
-find . -name "*.html" -exec sed -i 's|{{BASE_URL}}|https://seu-dominio.com|g' {} +
-```
-
-Se o domínio for `https://chamamais-atps-eleicoes-2026.lovable.app`, execute:
-
-```bash
-find . -name "*.html" -exec sed -i 's|{{BASE_URL}}|https://chamamais-atps-eleicoes-2026.lovable.app|g' {} +
-```
-
-O marcador aparece em **duas tags HTML** por página: `<link rel="canonical">` e `<meta property="og:url">`. Há também uma ocorrência em comentário HTML documental em cada arquivo (`<!-- SEO/OG: substituir {{BASE_URL}} antes do deploy -->`), que serve apenas como instrução para quem faz o deploy e não afeta o comportamento da página.
-Links internos entre páginas são **relativos** e não precisam de ajuste.
+Os quatro HTMLs já usam essa URL em `<link rel="canonical">` e `<meta property="og:url">`.
+Não há mais marcador `{{BASE_URL}}` nos HTMLs de produção. Os links internos continuam relativos.
 
 ---
 
@@ -57,7 +45,7 @@ Compatível com qualquer servidor de arquivos estáticos:
 
 | Plataforma       | Instrução                                                  |
 |------------------|------------------------------------------------------------|
-| Vercel           | Aponte a pasta `release/` como raiz do projeto             |
+| Vercel           | Repositório GitHub conectado; raiz do projeto: `./`        |
 | Netlify          | "Publish directory": `release`                             |
 | Cloudflare Pages | "Build output directory": `release`                        |
 | GitHub Pages     | Configure para servir a pasta `release/` (ou branch `gh-pages`) |
@@ -85,8 +73,7 @@ O site funciona sem conexão a `fonts.googleapis.com`, usando o fallback system-
 
 ## Notas de conteúdo
 
-- **Textos canônicos preservados**: o texto integral da Nota de Esclarecimento foi reproduzido
-  a partir de `landing-source/src/routes/index.tsx` sem alterações.
+- **Nota de Esclarecimento**: a Seção 5 foi substituída pela versão aprovada no release v2; as seções 1, 2, 3, 4 e 6 permanecem conforme o conteúdo canônico auditado.
 - **Dataset do painel**: 69 candidaturas (62 Câmara, 6 Senado, 1 Deputado Distrital) em
   18 unidades da federação. **Não modificado.**
 - **SEI 72042/2026 e SEI 18172/2026**: mantidos como no original do painel v4.6.

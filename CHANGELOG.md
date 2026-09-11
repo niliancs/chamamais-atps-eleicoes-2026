@@ -147,3 +147,12 @@ Tipos: `ESTRUTURA` | `CONTEÚDO` | `PATCH` | `META` | `ACESSIBILIDADE`
 - **Remoção de candidatos**: nenhuma alteração no recorte de candidaturas.
 - **Redesenho de identidade visual**: painel mantém CSS original (usa tokens `--blue`,
   `--turq` próprios, não `--cm-*`); harmonização aplicada somente via nav compartilhada.
+
+
+## Finalização de deploy — 11/09/2026
+
+- Base URL de produção definida como `https://chamamais-atps-eleicoes-2026.vercel.app`.
+- `{{BASE_URL}}` substituído nas tags `canonical` e `og:url` das quatro rotas.
+- Comentários HTML de pré-deploy atualizados para indicar URL canônica de produção.
+- README de release atualizado para refletir o deploy via GitHub + Vercel e raiz `./`.
+- Nenhum conteúdo editorial, dataset, filtro, busca ou evidência foi alterado nesta etapa.
