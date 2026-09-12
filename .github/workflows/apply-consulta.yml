@@ -1,0 +1,157 @@
+name: Aplicar consulta CR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-consulta.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Atualizar páginas
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          def replace_once(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f'Padrão não encontrado: {label}')
+              return text.replace(old, new, 1)
+
+          # LANDING
+          p = 'index.html'
+          s = read(p)
+          s = s.replace(
+              'Deliberação em 09/09/2026, publicação em 13/09/2026.',
+              'Deliberação em 09/09/2026, consulta ao grupo do CR em 11–12/09/2026 e publicação em 13/09/2026.'
+          )
+          s = replace_once(
+              s,
+              '<p class="dates">Deliberação 09/09/2026 · publicação 13/09/2026</p>',
+              '<p class="dates">Deliberação da Comissão 09/09/2026 · consulta ao grupo do CR 11–12/09/2026 · publicação 13/09/2026</p>',
+              'datas landing'
+          )
+
+          if '.consulta-box {' not in s:
+              css = '''\n    /* ─── Consulta ao grupo do CR ─────────────────────────────── */\n    .consulta-box {\n      margin: 2rem 0 0;\n      border-top: 1px solid var(--cm-line);\n      border-bottom: 1px solid var(--cm-line);\n      background: var(--cm-cyan);\n      padding: 1.4rem 1.25rem;\n    }\n    @media (min-width: 600px) { .consulta-box { padding: 1.6rem 1.75rem; } }\n    .consulta-box h3 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--cm-navy); }\n    .consulta-box .consulta-desc, .consulta-box .consulta-limit { margin: .75rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }\n    .consulta-result { padding: 1rem 0; border-bottom: 1px solid var(--cm-line); }\n    .consulta-result:last-of-type { border-bottom: 0; padding-bottom: .25rem; }\n    .consulta-result strong { display: block; color: var(--cm-navy); }\n    .consulta-result .number { margin-top: .35rem; color: var(--cm-blue); font-weight: 600; }\n    .consulta-result p { margin: .3rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }\n'''
+              s = replace_once(s, '    /* ─── Seção de documentos', css + '\n    /* ─── Seção de documentos', 'CSS consulta landing')
+
+          opening_pattern = re.compile(r'<p class="nota-opening">.*?</p>', re.S)
+          opening_new = '''<p class="nota-opening">\n        A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de\n        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, após análise comparativa\n        dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário eleitoral\n        consultado, em 9 de setembro de 2026, manifestar apoio público à candidatura de Lula à\n        Presidência da República. Em consulta posterior de 24 horas, realizada em 11 e 12 de setembro\n        de 2026 no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no\n        Cadastro Reserva, houve maioria favorável à divulgação de candidaturas parlamentares\n        selecionadas segundo critérios públicos e verificáveis.\n      </p>'''
+          s, n = opening_pattern.subn(opening_new, s, count=1)
+          if n != 1:
+              raise SystemExit('Não foi possível substituir abertura da nota')
+
+          if '117 de 123 participantes' not in s:
+              block = '''\n\n      <aside class="consulta-box" aria-labelledby="consulta-titulo">\n        <h3 id="consulta-titulo">Consulta ao grupo do CR</h3>\n        <p class="consulta-desc">A consulta ocorreu voluntariamente durante 24 horas, em 11–12/09/2026, no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva.</p>\n        <div class="consulta-result">\n          <strong>Apoio público a Lula</strong>\n          <div class="number">117 de 123 participantes · 95,1% favoráveis</div>\n          <p>0 votos “NÃO”; 6 participantes (4,9%) preferiram que o movimento não se manifestasse eleitoralmente.</p>\n        </div>\n        <div class="consulta-result">\n          <strong>Divulgação de candidaturas parlamentares</strong>\n          <div class="number">93 de 103 participantes · 90,3% favoráveis</div>\n          <p>6 participantes (5,8%) votaram “NÃO”; 4 participantes (3,9%) preferiram apenas o posicionamento presidencial.</p>\n        </div>\n        <p class="consulta-limit">Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade da decisão da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva.</p>\n      </aside>'''
+              s = replace_once(s, '\n\n      <p class="nota-intro">Esclarecemos que:</p>', block + '\n\n      <p class="nota-intro">Esclarecemos que:</p>', 'bloco consulta landing')
+
+          old_repr = '''<p>Esta decisão expressa o posicionamento da Comissão do Cadastro Reserva de ATPS do\n            CPNU 1. Não pressupõe unanimidade entre as pessoas integrantes do cadastro reserva,\n            não substitui suas escolhas individuais e não deve ser interpretada como manifestação\n            institucional de toda a carreira de ATPS.</p>'''
+          new_repr = '''<p>A decisão de manifestar apoio eleitoral foi deliberada pela Comissão do Cadastro Reserva de ATPS do CPNU 1 em 9 de setembro de 2026. Posteriormente, o posicionamento foi submetido a uma consulta de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, composto por pessoas que permanecem no Cadastro Reserva. Entre as pessoas que participaram das consultas, houve maioria favorável ao apoio público a Lula e à divulgação de candidaturas parlamentares segundo critérios públicos e verificáveis.</p>\n            <p>A consulta reforça a legitimidade do posicionamento, mas não pressupõe unanimidade entre todas as pessoas integrantes do Cadastro Reserva, não substitui suas escolhas individuais e não deve ser interpretada como manifestação institucional de toda a carreira de ATPS, do MGI ou da Andeps.</p>'''
+          s = replace_once(s, old_repr, new_repr, 'representatividade')
+
+          anchor4 = '''<div class="paragraphs">\n            <p>O levantamento de candidaturas reúne informações sobre parlamentares e demais'''
+          insert4 = '''<div class="paragraphs">\n            <p>A consulta registrou maioria favorável à possibilidade de o movimento divulgar candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>\n            <p>O levantamento de candidaturas reúne informações sobre parlamentares e demais'''
+          s = replace_once(s, anchor4, insert4, 'seção 4')
+
+          old_close = '''Nosso objetivo é oferecer transparência sobre a decisão tomada, permitir que os fundamentos\n        sejam verificados e preservar a autonomia de cada pessoa para formar sua própria posição.'''
+          new_close = '''A finalidade desta nota é dar publicidade à decisão do colegiado e à consulta posterior, delimitar quem ela representa, permitir que os fundamentos sejam verificados e preservar a autonomia de cada pessoa para formar sua própria posição.'''
+          s = replace_once(s, old_close, new_close, 'fecho da nota')
+
+          method_anchor = '''          participação em eventos. Essas categorias não são equivalentes entre si.\n        </p>'''
+          method_new = '''          participação em eventos. Essas categorias não são equivalentes entre si.\n        </p>\n        <p>\n          A consulta sobre candidaturas parlamentares refere-se à divulgação segundo critérios\n          públicos e verificáveis, não à aprovação automática de cada nome presente no painel.\n        </p>'''
+          s = replace_once(s, method_anchor, method_new, 'metodologia landing')
+
+          s = replace_once(
+              s,
+              '<p>Deliberação: 09/09/2026 · Publicação: 13/09/2026</p>',
+              '<p>Deliberação: 09/09/2026 · Consulta ao grupo do CR: 11–12/09/2026 · Publicação: 13/09/2026</p>',
+              'rodapé datas'
+          )
+          s = s.replace('Versão pública consolidada em 11/09/2026', 'Versão pública atualizada em 12/09/2026')
+          write(p, s)
+
+          # POR QUE LULA
+          p = 'apoio-lula/index.html'
+          s = read(p)
+          if 'consult-note' not in s:
+              s = s.replace('</style>', '.consult-note{margin:22px 0 26px;padding:18px 20px;border-left:4px solid #2d7968;background:#edf4f1;font-size:.88rem}.consult-note p{margin:.2rem 0 .65rem}.consult-note strong{color:#174f47}.consult-note .consult-meta{font-size:.76rem;color:#536970;margin-bottom:0}</style>', 1)
+          if '117 de 123 participantes' not in s:
+              needle = '<p class="scope">Atualização: 10 de setembro de 2026. As fontes estão junto dos fatos; a pesquisa completa acompanha esta peça.</p>'
+              note = needle + '</div><aside class="consult-note" aria-labelledby="consulta-cr-lula"><strong id="consulta-cr-lula">Consulta ao grupo do CR · 11–12/09/2026</strong><p>Após a deliberação da Comissão do Cadastro Reserva de ATPS do CPNU 1, o apoio público à candidatura de Lula foi submetido a consulta voluntária de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva.</p><p><strong>117 de 123 participantes (95,1%)</strong> foram favoráveis; não houve voto “NÃO”; 6 participantes (4,9%) preferiram que o movimento não se manifestasse eleitoralmente.</p><p class="consult-meta">O resultado registra a manifestação das pessoas que participaram da consulta e reforça a legitimidade da decisão da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva.</p></aside><div style="display:none">'
+              s = replace_once(s, needle, note, 'consulta apoio-lula')
+          s = s.replace('Identidade e infraestrutura harmonizadas em 11/09/2026.', 'Governança atualizada com consulta ao grupo do CR em 11–12/09/2026.')
+          write(p, s)
+
+          # Corrigir o truque de fechamento usado na inserção acima, preservando a estrutura do hero.
+          s = read(p)
+          s = s.replace('</aside><div style="display:none"></div>', '</aside>')
+          s = s.replace('</aside><div style="display:none">', '</aside><div style="display:none">')
+          write(p, s)
+
+          # FUNDAMENTOS
+          p = 'fundamentos/index.html'
+          s = read(p)
+          if 'governance-note' not in s:
+              s = s.replace('</style>', '.governance-note{margin:20px 0 28px;padding:18px 20px;border-left:4px solid #2d7968;background:#edf4f1;font-size:.88rem}.governance-note p{margin:.25rem 0 .7rem}.governance-note strong{color:#174f47}.governance-note .small{font-size:.76rem;color:#536970}</style>', 1)
+          if 'Governança do posicionamento · consulta 11–12/09/2026' not in s:
+              marker = 'A conclusão de apoio é uma avaliação editorial, explicitamente separada da documentação.</p>'
+              block = marker + '<aside class="governance-note"><strong>Governança do posicionamento · consulta 11–12/09/2026</strong><p>A Comissão do Cadastro Reserva de ATPS do CPNU 1 deliberou o apoio público à candidatura de Lula em 09/09/2026. Depois da deliberação, o posicionamento foi submetido a consulta voluntária de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva.</p><p><strong>117 de 123 participantes (95,1%)</strong> foram favoráveis ao apoio público a Lula. Em consulta separada, <strong>93 de 103 participantes (90,3%)</strong> foram favoráveis à divulgação de candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis.</p><p class="small">A consulta reforça a legitimidade do posicionamento, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva. A segunda consulta não constitui aprovação automática de cada nome do painel parlamentar.</p></aside>'
+              s = replace_once(s, marker, block, 'governança fundamentos')
+          write(p, s)
+
+          # CANDIDATURAS
+          p = 'candidaturas/index.html'
+          s = read(p)
+          if '.consult-note{' not in s:
+              s = s.replace('</style>', '.consult-note{margin:20px 0 24px;padding:18px 20px;border-left:4px solid var(--green);background:#edf4f1;border-radius:8px;font-size:13px;line-height:1.65}.consult-note strong{color:var(--green);display:block;margin-bottom:6px}.consult-note p{margin:6px 0}.consult-note .consult-meta{font-size:11px;color:var(--muted)}</style>', 1)
+          s = s.replace('Corte factual 10 set. 2026 · atualização 11 set.', 'Corte factual 10 set. 2026 · consulta ao CR 11–12 set.')
+          if '93 de 103 participantes (90,3%)' not in s:
+              marker = 'Seleção de nomes com apoio registrado, atuação formal sobre ATPS/CPNU ou vínculo documental pertinente. A presença no painel, por si só, não comprova apoio à convocação de ATPS.</p>'
+              block = marker + '<aside class="consult-note"><strong>Consulta ao grupo do CR · 11–12/09/2026</strong><p>Em consulta voluntária de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, <b>93 de 103 participantes (90,3%)</b> foram favoráveis à divulgação de candidaturas parlamentares selecionadas a partir de critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta. 6 participantes (5,8%) votaram “NÃO” e 4 (3,9%) preferiram apenas o posicionamento presidencial.</p><p class="consult-meta">A consulta autoriza a divulgação segundo critérios; não transforma este levantamento factual em lista automática de candidaturas apoiadas. A presença de um nome no painel continua não significando, por si só, endosso eleitoral.</p></aside>'
+              s = replace_once(s, marker, block, 'consulta candidaturas')
+          write(p, s)
+
+          # QA textual
+          checks = {
+              'index consulta Lula': '117 de 123 participantes' in read('index.html'),
+              'index consulta parlamentares': '93 de 103 participantes' in read('index.html'),
+              'apoio consulta': '117 de 123 participantes (95,1%)' in read('apoio-lula/index.html'),
+              'fundamentos governança': 'Governança do posicionamento · consulta 11–12/09/2026' in read('fundamentos/index.html'),
+              'candidaturas consulta': '93 de 103 participantes (90,3%)' in read('candidaturas/index.html'),
+              'sem ratificação': all('ratifica' not in read(x).lower() for x in ['index.html','apoio-lula/index.html','fundamentos/index.html','candidaturas/index.html']),
+              'sem 95,1 do CR': all('95,1% do Cadastro Reserva' not in read(x) for x in ['index.html','apoio-lula/index.html','fundamentos/index.html','candidaturas/index.html']),
+          }
+          bad = [k for k,v in checks.items() if not v]
+          print(checks)
+          if bad:
+              raise SystemExit('QA falhou: ' + ', '.join(bad))
+          PY
+
+      - name: Commitar páginas e remover workflow temporário
+        shell: bash
+        run: |
+          rm -f .github/workflows/apply-consulta.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Atualiza consulta e governança eleitoral do CR"
+          git push origin main
