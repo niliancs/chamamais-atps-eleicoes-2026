@@ -46,14 +46,18 @@ jobs:
                 const footer=document.querySelector('.brand-signature--footer');
                 const foot=document.querySelector('footer.foot');
                 const details=[...document.querySelectorAll('details>summary')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0}).map(el=>Math.round(el.getBoundingClientRect().height));
+                const navTargets=[...document.querySelectorAll('.site-nav a,.topnav a,.toc a')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0}).map(el=>Math.round(el.getBoundingClientRect().height));
                 const navAffordance=[...document.querySelectorAll('.jump,.topnav')].map(el=>getComputedStyle(el,'::after').content);
+                const toc=document.querySelector('.toc');
                 return {
                   overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
                   h1:document.querySelectorAll('h1').length,
                   heroBg:hero?getComputedStyle(hero).backgroundImage:null,
                   footerBg:footer?getComputedStyle(footer).backgroundImage:(foot?getComputedStyle(foot,'::before').backgroundImage:null),
                   detailsMin:details.length?Math.min(...details):null,
+                  navMin:navTargets.length?Math.min(...navTargets):null,
                   navAffordance,
+                  tocShadow:toc?getComputedStyle(toc).boxShadow:null,
                   homeOpening:document.querySelector('.nota-opening')?{maxWidth:getComputedStyle(document.querySelector('.nota-opening')).maxWidth,lineHeight:getComputedStyle(document.querySelector('.nota-opening')).lineHeight}:null
                 };
               });
@@ -65,6 +69,8 @@ jobs:
               await page.screenshot({path:`qa-postfix/${key}-full.png`,fullPage:true});
               if(resp?.status()!==200||metrics.h1!==1||metrics.overflow>0||consoleErrors.length||severe.length){failed=true;}
               if(vpName==='mobile'&&metrics.detailsMin!==null&&metrics.detailsMin<44){failed=true;report.checks.push(`${key}: details summary min height ${metrics.detailsMin}px`)}
+              if(vpName==='mobile'&&metrics.navMin!==null&&metrics.navMin<44){failed=true;report.checks.push(`${key}: navigation target min height ${metrics.navMin}px`)}
+              if(name==='fundamentos'&&vpName==='mobile'&&(!metrics.tocShadow||metrics.tocShadow==='none')){failed=true;report.checks.push(`${key}: horizontal TOC has no continuation affordance`)}
               if(!String(metrics.heroBg).includes('assinatura_topo_chama_atps.png')){failed=true;report.checks.push(`${key}: hero asset changed`)}
               if(!String(metrics.footerBg).includes('selo_rodape_chama_atps_v4.webp')){failed=true;report.checks.push(`${key}: footer asset changed`)}
               await context.close();
@@ -72,7 +78,7 @@ jobs:
           }
 
           fs.writeFileSync('qa-postfix/report.json',JSON.stringify(report,null,2));
-          fs.writeFileSync('qa-postfix/summary.txt',failed?'FAIL\n'+report.checks.join('\n'):'PASS — no serious/critical axe violations, no horizontal overflow, assets preserved and mobile details targets >=44px');
+          fs.writeFileSync('qa-postfix/summary.txt',failed?'FAIL\n'+report.checks.join('\n'):'PASS — no serious/critical axe violations, no horizontal overflow, assets preserved, and mobile navigation/details targets >=44px');
           console.log(fs.readFileSync('qa-postfix/summary.txt','utf8'));
           await browser.close();
           if(failed) process.exit(1);
