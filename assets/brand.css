@@ -66,9 +66,9 @@ footer.foot:not(:has(.brand-signature--footer))::before{
 .coverage td small,
 .timeline td small{color:#405d66!important}
 #resultados>.eyebrow{color:#24586d!important}
-#csv,
 .more>summary,
 .caveat.more>summary{color:#24586d!important}
+#csv{color:#fff!important}
 .nota-opening{max-width:64ch;text-wrap:pretty}
 html,body{max-width:100%;overflow-x:clip}
 
