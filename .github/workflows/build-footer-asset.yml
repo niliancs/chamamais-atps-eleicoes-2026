@@ -23,9 +23,9 @@ jobs:
         run: |
           set -euo pipefail
           inkscape assets/pincelada_azul_preset.svg --export-width=1080 --export-filename=/tmp/brush.png >/dev/null 2>&1
-          magick /tmp/brush.png -trim +repage /tmp/brush_trim.png
+          convert /tmp/brush.png -trim +repage /tmp/brush_trim.png
           inkscape assets/lettering_chama_atps.svg --export-width=456 --export-filename=/tmp/letter.png >/dev/null 2>&1
-          magick /tmp/letter.png -trim +repage /tmp/letter_trim.png
+          convert /tmp/letter.png -trim +repage /tmp/letter_trim.png
           python3 - <<'PY'
           from PIL import Image
           brush=Image.open('/tmp/brush_trim.png').convert('RGBA')
