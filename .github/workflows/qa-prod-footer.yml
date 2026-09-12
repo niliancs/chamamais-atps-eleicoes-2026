@@ -1,0 +1,52 @@
+name: Production footer QA
+on:
+  push:
+    branches: [qa-prod-footer-20260912]
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Check production footer
+        run: |
+          mkdir -p qa-prod
+          cat > qa-prod.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const pages=[['home','/'],['apoio-lula','/apoio-lula/'],['fundamentos','/fundamentos/'],['candidaturas','/candidaturas/']];
+          const base='https://chamamais-atps-eleicoes-2026.vercel.app';
+          for (const [name,path] of pages){
+            const page=await browser.newPage({viewport:{width:1440,height:900}});
+            const responses=[];
+            page.on('response',r=>{ if(r.url().includes('selo_rodape_chama_atps')) responses.push({url:r.url(),status:r.status(),ct:r.headers()['content-type']||''}); });
+            const resp=await page.goto(base+path,{waitUntil:'networkidle',timeout:60000});
+            const data=await page.evaluate(()=>{
+              const explicit=document.querySelector('.brand-signature--footer');
+              const foot=document.querySelector('footer.foot');
+              const e=explicit?getComputedStyle(explicit):null;
+              const er=explicit?.getBoundingClientRect();
+              const p=foot?getComputedStyle(foot,'::before'):null;
+              return {title:document.title, explicit:!!explicit, box:er?{w:er.width,h:er.height}:null, bg:e?.backgroundImage||null, pseudoContent:p?.content||null, pseudoBg:p?.backgroundImage||null};
+            });
+            console.log('PROD',name,'pageStatus',resp?.status(),JSON.stringify(data),'assetResponses',JSON.stringify(responses));
+            const footer=page.locator('footer').last();
+            if(await footer.count()) await footer.screenshot({path:`qa-prod/${name}-footer.png`});
+            await page.close();
+          }
+          await browser.close();
+          EOF
+          node qa-prod.mjs | tee qa-prod/metrics.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-footer-qa
+          path: qa-prod
