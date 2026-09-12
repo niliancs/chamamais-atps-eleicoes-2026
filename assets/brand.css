@@ -23,8 +23,8 @@
 .brand-signature--hero{
   width:clamp(180px,19vw,220px)!important;
   aspect-ratio:2/1!important;
-  margin:0 0 1rem;
-  background:url("assinatura_topo_chama_atps.png") left center/contain no-repeat;
+  margin:0 0 1rem auto;
+  background:url("assinatura_topo_chama_atps.png") right center/contain no-repeat;
   overflow:visible;
 }
 .brand-signature--hero .brand-brush-crop,
