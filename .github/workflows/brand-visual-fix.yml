@@ -1,0 +1,101 @@
+name: Fix brand visual layout
+
+on:
+  push:
+    branches: [brand-visual-fix]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fix signature geometry and Lula hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          css_path = Path('assets/brand.css')
+          css = css_path.read_text(encoding='utf-8')
+          replacements = {
+              '.brand-signature{position:relative;display:block;flex:0 0 auto;max-width:100%;line-height:0;isolation:isolate}':
+              '.brand-signature{position:relative;display:block;flex:0 0 auto;max-width:100%;line-height:0;isolation:isolate;overflow:hidden;contain:paint}',
+              '.brand-signature--brush .brand-lettering{width:88%;left:5.5%;top:16.67%}':
+              '.brand-signature--brush .brand-lettering{width:72%;left:14%;top:27%}',
+              '.brand-signature--megaphone{width:clamp(175px,22vw,240px);aspect-ratio:273/132}':
+              '.brand-signature--megaphone{width:clamp(160px,19vw,215px);aspect-ratio:273/132}',
+              '.brand-signature--megaphone .brand-lettering{width:70.916%;left:4.43%;top:16.67%}':
+              '.brand-signature--megaphone .brand-lettering{width:58%;left:8%;top:28%}',
+              '@media(max-width:620px){.brand-signature--brush{width:clamp(148px,45vw,175px)}.brand-signature--megaphone{width:clamp(165px,54vw,190px)}':
+              '@media(max-width:620px){.brand-signature--brush{width:clamp(145px,43vw,170px)}.brand-signature--megaphone{width:clamp(150px,48vw,180px)}',
+          }
+          for old, new in replacements.items():
+              if css.count(old) != 1:
+                  raise SystemExit(f'CSS anchor mismatch: {old[:90]!r} count={css.count(old)}')
+              css = css.replace(old, new, 1)
+          css_path.write_text(css, encoding='utf-8')
+
+          page_path = Path('apoio-lula/index.html')
+          page = page_path.read_text(encoding='utf-8')
+          logo = '<div class="brand-signature brand-signature--megaphone brand-signature--hero" role="img" aria-label="Chama + ATPS"><span class="brand-brush-crop" aria-hidden="true"><img src="../assets/pincelada_azul_preset.svg" alt=""></span><img class="brand-lettering" src="../assets/lettering_chama_atps.svg" alt="" aria-hidden="true"><span class="brand-megaphone-crop" aria-hidden="true"><img src="../assets/megafone_mao.svg" alt=""></span></div>'
+          old = '<header class="hero">' + logo + '<div><div class="eyebrow">'
+          new = '<header class="hero"><div>' + logo + '<div class="eyebrow">'
+          if page.count(old) != 1:
+              raise SystemExit(f'Lula hero anchor mismatch count={page.count(old)}')
+          page = page.replace(old, new, 1)
+          page_path.write_text(page, encoding='utf-8')
+          PY
+
+      - name: Regression QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          css = Path('assets/brand.css').read_text(encoding='utf-8')
+          required_css = [
+              'overflow:hidden;contain:paint',
+              '.brand-signature--brush .brand-lettering{width:72%;left:14%;top:27%}',
+              '.brand-signature--megaphone{width:clamp(160px,19vw,215px);aspect-ratio:273/132}',
+              '.brand-signature--megaphone .brand-lettering{width:58%;left:8%;top:28%}',
+          ]
+          for token in required_css:
+              assert token in css, token
+
+          apoio = Path('apoio-lula/index.html').read_text(encoding='utf-8')
+          assert '<header class="hero"><div><div class="brand-signature brand-signature--megaphone brand-signature--hero"' in apoio
+          assert '<header class="hero"><div class="brand-signature brand-signature--megaphone brand-signature--hero"' not in apoio
+          hero_start = apoio.index('<header class="hero">')
+          hero_end = apoio.index('</header>', hero_start)
+          hero = apoio[hero_start:hero_end]
+          assert hero.count('class="brand-signature') == 1
+          assert hero.find('class="brand-signature') < hero.find('class="eyebrow"') < hero.find('<h1>') < hero.find('<aside class="seal"')
+
+          pages = ['index.html','apoio-lula/index.html','fundamentos/index.html','candidaturas/index.html']
+          for f in pages:
+              t = Path(f).read_text(encoding='utf-8')
+              assert 'brand.css' in t, f'{f}: brand.css ausente'
+              assert 'lettering_chama_atps.svg' in t, f'{f}: lettering ausente'
+              assert t.count('<html') == 1 and t.count('</html>') == 1, f'{f}: HTML estrutural'
+          cand = Path('candidaturas/index.html').read_text(encoding='utf-8')
+          assert 'brand-signature--megaphone' not in cand, 'megafone indevido no painel de candidaturas'
+          print('PASS: lettering contido, hero Lula com 2 colunas funcionais e quatro páginas preservadas.')
+          PY
+
+      - name: Commit fix and remove one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/brand-visual-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/brand.css apoio-lula/index.html .github/workflows/brand-visual-fix.yml
+          git commit -m "Fix brand signature overflow and Lula hero layout"
+          git push
