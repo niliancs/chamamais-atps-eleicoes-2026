@@ -1,0 +1,81 @@
+name: Footer visibility QA
+on:
+  push:
+    branches: [qa-footer-visible-20260912]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Verify footer seal
+        run: |
+          mkdir -p qa-artifacts
+          cat > qa.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const pages = [
+            ['home','/'],
+            ['apoio-lula','/apoio-lula/'],
+            ['fundamentos','/fundamentos/'],
+            ['candidaturas','/candidaturas/']
+          ];
+          const viewports=[['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]];
+          let failed=false;
+          for (const [vp,viewport] of viewports){
+            const ctx=await browser.newContext({viewport});
+            for(const [name,path] of pages){
+              const page=await ctx.newPage();
+              await page.goto('http://127.0.0.1:4173'+path,{waitUntil:'networkidle'});
+              const m=await page.evaluate(()=>{
+                const explicit=document.querySelector('.brand-signature--footer');
+                const foot=document.querySelector('footer.foot');
+                const er=explicit?.getBoundingClientRect();
+                const es=explicit?getComputedStyle(explicit):null;
+                const ps=foot?getComputedStyle(foot,'::before'):null;
+                return {
+                  explicit:!!explicit,
+                  explicitBox:er?{w:er.width,h:er.height}:null,
+                  explicitBg:es?.backgroundImage||null,
+                  pseudoContent:ps?.content||null,
+                  pseudoBg:ps?.backgroundImage||null,
+                  pseudoW:ps?.width||null,
+                  pseudoH:ps?.height||null,
+                  overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
+                };
+              });
+              console.log('QA',vp,name,JSON.stringify(m));
+              let ok=false;
+              if(m.explicit){
+                ok=m.explicitBox.w>80 && m.explicitBox.h>30 && (m.explicitBg||'').includes('selo_rodape_chama_atps.webp');
+              } else {
+                ok=m.pseudoContent==='""' && (m.pseudoBg||'').includes('selo_rodape_chama_atps.webp') && parseFloat(m.pseudoW)>80 && parseFloat(m.pseudoH)>30;
+              }
+              if(!ok){console.error('FAIL FOOTER',vp,name,m);failed=true;}
+              const footer=page.locator('footer').last();
+              if(await footer.count()) await footer.screenshot({path:`qa-artifacts/${name}-${vp}-footer.png`});
+              await page.close();
+            }
+            await ctx.close();
+          }
+          await browser.close();
+          if(failed) process.exit(1);
+          console.log('QA PASS');
+          EOF
+          node qa.mjs | tee qa-artifacts/metrics.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: footer-visibility-qa
+          path: qa-artifacts
