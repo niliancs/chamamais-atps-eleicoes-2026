@@ -56,6 +56,74 @@ footer.foot:not(:has(.brand-signature--footer))::before{
 /* Nota de esclarecimento: o megafone fala para o título; os raios apontam para “Nota”. */
 .brand-heading-accent .brand-icon--megaphone{transform:scaleX(-1)}
 
+/* QA final 12/09/2026 · contraste e legibilidade sem alterar a identidade aprovada. */
+:root{
+  --cm-muted:#536970;
+  --muted:#536970;
+}
+.promise-table td small,
+.report-compare td small,
+.coverage td small,
+.timeline td small{color:#405d66!important}
+#resultados>.eyebrow{color:#24586d!important}
+#csv,
+.more>summary,
+.caveat.more>summary{color:#24586d!important}
+.nota-opening{max-width:64ch;text-wrap:pretty}
+html,body{max-width:100%;overflow-x:clip}
+
+@media(max-width:720px){
+  /* Áreas de toque mínimas para navegação e expansores. */
+  .site-nav a,
+  .topnav a{min-height:44px;display:flex;align-items:center}
+  details>summary{min-height:44px;display:flex;align-items:center;padding-block:10px}
+  .source-detail>summary,
+  .electoral>summary,
+  .more>summary{font-size:max(.75rem,12px)!important;line-height:1.35}
+
+  /* Metadados essenciais deixam de cair abaixo de 12 px. */
+  .candidate .eyebrow,
+  .candidate .label,
+  .candidate .status,
+  .candidate .doc-top>span,
+  .candidate .doc-links,
+  .candidate .source-detail p,
+  .candidate .electoral dl,
+  .candidate .electoral p,
+  .tiny,
+  .compact-source{font-size:max(.75rem,12px)!important}
+
+  /* Affordance de continuidade para barras horizontais no mobile. */
+  .jump,
+  .topnav{position:sticky}
+  .jump::after,
+  .topnav::after{
+    content:"›";
+    position:absolute;
+    right:.2rem;
+    top:50%;
+    transform:translateY(-50%);
+    width:2rem;
+    min-height:42px;
+    display:grid;
+    place-items:center;
+    pointer-events:none;
+    color:#1769D2;
+    font-size:1.35rem;
+    font-weight:800;
+    background:linear-gradient(90deg,rgba(245,251,252,0),rgba(245,251,252,.98) 52%);
+  }
+  .jump .wrap,
+  .topnav .wrap{padding-right:2.25rem!important}
+
+  /* Elimina o excedente horizontal residual de poucos pixels no dossiê. */
+  .report,
+  .report-content,
+  .chapter,
+  .wide,
+  .table-scroll{max-width:100%;min-width:0}
+}
+
 @media(max-width:620px){
   .brand-signature--brush{width:clamp(145px,43vw,170px)}
   .brand-signature--megaphone{width:clamp(150px,48vw,180px)}
@@ -64,5 +132,6 @@ footer.foot:not(:has(.brand-signature--footer))::before{
   .brand-signature--footer{width:108px!important}
   .brand-heading-accent{gap:.6rem}
   footer.foot:not(:has(.brand-signature--footer))::before{width:108px}
+  .nota-opening{max-width:58ch;line-height:1.82}
 }
 @media print{.brand-signature,.brand-icon{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
