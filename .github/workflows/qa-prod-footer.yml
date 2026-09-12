@@ -43,6 +43,26 @@ jobs:
             if(await footer.count()) await footer.screenshot({path:`qa-prod/${name}-footer.png`});
             await page.close();
           }
+
+          // Inspect production asset pixels directly.
+          const assetPage=await browser.newPage({viewport:{width:1200,height:700}});
+          await assetPage.goto(base+'/assets/selo_rodape_chama_atps.webp',{waitUntil:'networkidle',timeout:60000});
+          const assetData=await assetPage.evaluate(()=>{
+            const img=document.querySelector('img');
+            if(!img) return {img:false};
+            const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+            const ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
+            const d=ctx.getImageData(0,0,c.width,c.height).data;
+            let nonTransparent=0, blueish=0, whiteish=0;
+            for(let i=0;i<d.length;i+=4){
+              const [r,g,b,a]=[d[i],d[i+1],d[i+2],d[i+3]];
+              if(a>8){ nonTransparent++; if(b>r*1.05 && b>g*1.05) blueish++; if(r>235&&g>235&&b>235) whiteish++; }
+            }
+            return {img:true,w:img.naturalWidth,h:img.naturalHeight,nonTransparent,blueish,whiteish,total:c.width*c.height};
+          });
+          console.log('ASSET_PIXELS',JSON.stringify(assetData));
+          await assetPage.screenshot({path:'qa-prod/asset-direct.png',fullPage:true});
+          await assetPage.close();
           await browser.close();
           EOF
           node qa-prod.mjs | tee qa-prod/metrics.log
