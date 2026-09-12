@@ -76,7 +76,9 @@ html,body{max-width:100%;overflow-x:clip}
 @media(max-width:720px){
   /* Áreas de toque mínimas para navegação e expansores. */
   .site-nav a,
-  .topnav a{min-height:44px;display:flex;align-items:center}
+  .topnav a,
+  .toc a{min-height:44px;display:flex;align-items:center}
+  .toc a{padding-block:10px}
   details>summary{min-height:44px;display:flex;align-items:center;padding-block:10px}
   .source-detail>summary,
   .electoral>summary,
@@ -116,6 +118,7 @@ html,body{max-width:100%;overflow-x:clip}
   }
   .jump .wrap,
   .topnav .wrap{padding-right:2.25rem!important}
+  .toc{padding-right:1.5rem!important;box-shadow:inset -20px 0 18px -18px rgba(7,26,60,.55)}
 
   /* Elimina o excedente horizontal residual de poucos pixels no dossiê. */
   .report,
