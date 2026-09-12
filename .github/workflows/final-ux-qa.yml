@@ -1,0 +1,155 @@
+name: Final UX QA
+on:
+  push:
+    branches: [final-ux-qa-20260912-v9]
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright and axe
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 @axe-core/playwright@4.10.2 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Run final UX, usability, UI and journey QA
+        run: |
+          mkdir -p qa-final
+          cat > qa-final.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import AxeBuilder from '@axe-core/playwright';
+          import fs from 'fs';
+
+          const base='https://chamamais-atps-eleicoes-2026.vercel.app';
+          const pages=[
+            {name:'home',path:'/'},
+            {name:'apoio-lula',path:'/apoio-lula/'},
+            {name:'fundamentos',path:'/fundamentos/'},
+            {name:'candidaturas',path:'/candidaturas/'}
+          ];
+          const viewports={desktop:{width:1440,height:900},mobile:{width:390,height:844}};
+          const browser=await chromium.launch({headless:true});
+          const report={base,generatedAt:new Date().toISOString(),pages:{},journeys:{},internalLinks:{}};
+
+          function headingSkips(levels){
+            const skips=[]; for(let i=1;i<levels.length;i++){ if(levels[i]-levels[i-1]>1) skips.push([levels[i-1],levels[i]]); } return skips;
+          }
+
+          for(const [vpName,viewport] of Object.entries(viewports)){
+            for(const p of pages){
+              const page=await browser.newPage({viewport});
+              const errors=[]; const consoleErrors=[];
+              page.on('pageerror',e=>errors.push(String(e)));
+              page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
+              const resp=await page.goto(base+p.path,{waitUntil:'networkidle',timeout:60000});
+              await page.waitForTimeout(500);
+              const key=`${p.name}-${vpName}`;
+              const data=await page.evaluate(()=>{
+                const visible=el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'};
+                const headings=[...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].filter(visible).map(h=>({level:Number(h.tagName[1]),text:h.textContent.trim().replace(/\s+/g,' ').slice(0,180)}));
+                const interactives=[...document.querySelectorAll('a[href],button,input,select,textarea,summary')].filter(visible).map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName.toLowerCase(),text:(el.innerText||el.getAttribute('aria-label')||el.getAttribute('title')||'').trim().replace(/\s+/g,' ').slice(0,100),w:Math.round(r.width),h:Math.round(r.height)}});
+                const small24=interactives.filter(x=>x.w<24||x.h<24);
+                const small44=interactives.filter(x=>x.w<44||x.h<44);
+                const longParas=[...document.querySelectorAll('p')].filter(visible).map(el=>el.textContent.trim().replace(/\s+/g,' ')).filter(t=>t.length>520).map(t=>({chars:t.length,start:t.slice(0,140)}));
+                const tinyText=[...document.querySelectorAll('p,li,a,button,summary,small,span')].filter(visible).map(el=>({text:el.textContent.trim().replace(/\s+/g,' ').slice(0,90),px:parseFloat(getComputedStyle(el).fontSize)})).filter(x=>x.text&&x.px<12);
+                const hero=document.querySelector('.brand-signature--hero');
+                const heroRect=hero?.getBoundingClientRect();
+                const parentRect=hero?.parentElement?.getBoundingClientRect();
+                const footer=document.querySelector('.brand-signature--footer');
+                const foot=document.querySelector('footer.foot');
+                const footerBg=footer?getComputedStyle(footer).backgroundImage:(foot?getComputedStyle(foot,'::before').backgroundImage:'');
+                const internal=[...document.querySelectorAll('a[href]')].map(a=>a.href).filter(h=>h.startsWith(location.origin));
+                return {
+                  title:document.title,
+                  lang:document.documentElement.lang,
+                  h1Count:document.querySelectorAll('h1').length,
+                  headings,
+                  ariaCurrent:[...document.querySelectorAll('[aria-current]')].map(e=>({tag:e.tagName.toLowerCase(),value:e.getAttribute('aria-current'),text:e.textContent.trim().replace(/\s+/g,' ').slice(0,100)})),
+                  horizontalOverflow:Math.max(0,document.documentElement.scrollWidth-window.innerWidth),
+                  bodyScrollWidth:document.documentElement.scrollWidth,
+                  viewportWidth:window.innerWidth,
+                  hero:{exists:!!hero,bg:hero?getComputedStyle(hero).backgroundImage:null,rightGap:heroRect&&parentRect?Math.round(parentRect.right-heroRect.right):null},
+                  footer:{exists:!!footer||!!foot,bg:footerBg},
+                  interactiveCount:interactives.length,
+                  small24:small24.slice(0,30),
+                  small44:small44.slice(0,30),
+                  longParas:longParas.slice(0,20),
+                  tinyText:tinyText.slice(0,30),
+                  internal:[...new Set(internal)]
+                };
+              });
+              const levels=data.headings.map(h=>h.level);
+              data.headingSkips=headingSkips(levels);
+              const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+              data.axe={violations:axe.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.length,targets:v.nodes.slice(0,6).map(n=>n.target)})),count:axe.violations.length};
+              data.errors=errors; data.consoleErrors=consoleErrors;
+              report.pages[key]={status:resp?.status(),...data};
+              await page.screenshot({path:`qa-final/${key}-full.png`,fullPage:true});
+              await page.screenshot({path:`qa-final/${key}-viewport.png`});
+              await page.close();
+            }
+          }
+
+          const allInternal=new Set();
+          for(const p of Object.values(report.pages)) for(const h of p.internal||[]) allInternal.add(h.split('#')[0]);
+          const request=await browser.newPage();
+          for(const url of [...allInternal]){
+            if(!url) continue;
+            try{ const r=await request.request.get(url,{timeout:30000}); report.internalLinks[url]=r.status(); }
+            catch(e){ report.internalLinks[url]=`ERR ${String(e)}`; }
+          }
+          await request.close();
+
+          const journeyPage=await browser.newPage({viewport:viewports.mobile});
+          await journeyPage.goto(base,{waitUntil:'networkidle'});
+          const steps=[];
+          for(const label of ['Por que Lula','Fundamentos','Candidaturas']){
+            const link=journeyPage.getByRole('link',{name:label,exact:true}).first();
+            const exists=await link.count()>0;
+            if(!exists){steps.push({label,ok:false,reason:'link not found'});continue;}
+            await link.click(); await journeyPage.waitForLoadState('networkidle');
+            const landed=journeyPage.url();
+            steps.push({label,ok:true,landed});
+            const home=journeyPage.locator('a.nav-home').first();
+            if(await home.count()){await home.click();await journeyPage.waitForLoadState('networkidle');}
+            else {await journeyPage.goto(base,{waitUntil:'networkidle'});}
+          }
+          report.journeys.mobilePrimaryNav=steps;
+
+          await journeyPage.goto(base,{waitUntil:'networkidle'});
+          const focusTrail=[];
+          for(let i=0;i<14;i++){
+            await journeyPage.keyboard.press('Tab');
+            focusTrail.push(await journeyPage.evaluate(()=>{const a=document.activeElement; if(!a) return null; const r=a.getBoundingClientRect(); const s=getComputedStyle(a); return {tag:a.tagName.toLowerCase(),text:(a.innerText||a.getAttribute('aria-label')||'').trim().replace(/\s+/g,' ').slice(0,90),href:a.getAttribute('href'),outline:s.outlineStyle,outlineWidth:s.outlineWidth,visible:r.width>0&&r.height>0};}));
+          }
+          report.journeys.keyboardFocusTrail=focusTrail;
+          await journeyPage.close();
+
+          fs.writeFileSync('qa-final/report.json',JSON.stringify(report,null,2));
+          const issues=[];
+          for(const [key,p] of Object.entries(report.pages)){
+            if(p.status!==200) issues.push(`${key}: HTTP ${p.status}`);
+            if(p.h1Count!==1) issues.push(`${key}: h1 count ${p.h1Count}`);
+            if(p.horizontalOverflow>0) issues.push(`${key}: horizontal overflow ${p.horizontalOverflow}px`);
+            if(p.headingSkips.length) issues.push(`${key}: heading skips ${JSON.stringify(p.headingSkips)}`);
+            const severe=p.axe.violations.filter(v=>['serious','critical'].includes(v.impact));
+            if(severe.length) issues.push(`${key}: axe serious/critical ${severe.map(v=>v.id).join(', ')}`);
+            if(p.errors.length) issues.push(`${key}: page errors ${p.errors.length}`);
+          }
+          for(const [u,s] of Object.entries(report.internalLinks)) if(typeof s==='number'&&s>=400) issues.push(`broken internal ${s}: ${u}`);
+          fs.writeFileSync('qa-final/summary.txt',issues.length?issues.join('\n'):'NO BLOCKING AUTOMATED ISSUES');
+          console.log(JSON.stringify(report,null,2));
+          console.log('\nSUMMARY\n'+fs.readFileSync('qa-final/summary.txt','utf8'));
+          await browser.close();
+          EOF
+          node qa-final.mjs | tee qa-final/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-ux-qa
+          path: qa-final
