@@ -1,3 +1,4 @@
+# rerun after fixing footer asset transparency
 name: Production footer QA
 on:
   push:
@@ -43,8 +44,6 @@ jobs:
             if(await footer.count()) await footer.screenshot({path:`qa-prod/${name}-footer.png`});
             await page.close();
           }
-
-          // Inspect production asset pixels directly.
           const assetPage=await browser.newPage({viewport:{width:1200,height:700}});
           await assetPage.goto(base+'/assets/selo_rodape_chama_atps.webp',{waitUntil:'networkidle',timeout:60000});
           const assetData=await assetPage.evaluate(()=>{
