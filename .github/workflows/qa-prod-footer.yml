@@ -1,4 +1,4 @@
-# rerun after cache-busting footer asset filename
+# final production QA for footer asset v4
 name: Production footer QA
 on:
   push:
@@ -26,11 +26,13 @@ jobs:
           const browser = await chromium.launch({headless:true});
           const pages=[['home','/'],['apoio-lula','/apoio-lula/'],['fundamentos','/fundamentos/'],['candidaturas','/candidaturas/']];
           const base='https://chamamais-atps-eleicoes-2026.vercel.app';
+          let failed=false;
           for (const [name,path] of pages){
             const page=await browser.newPage({viewport:{width:1440,height:900}});
             const responses=[];
             page.on('response',r=>{ if(r.url().includes('selo_rodape_chama_atps')) responses.push({url:r.url(),status:r.status(),ct:r.headers()['content-type']||''}); });
             const resp=await page.goto(base+path,{waitUntil:'networkidle',timeout:60000});
+            await page.waitForTimeout(1000);
             const data=await page.evaluate(()=>{
               const explicit=document.querySelector('.brand-signature--footer');
               const foot=document.querySelector('footer.foot');
@@ -39,16 +41,20 @@ jobs:
               const p=foot?getComputedStyle(foot,'::before'):null;
               return {title:document.title, explicit:!!explicit, box:er?{w:er.width,h:er.height}:null, bg:e?.backgroundImage||null, pseudoContent:p?.content||null, pseudoBg:p?.backgroundImage||null};
             });
+            const bg=(data.bg||data.pseudoBg||'');
+            const ok=resp?.status()===200 && bg.includes('selo_rodape_chama_atps_v4.webp') && responses.some(r=>r.status===200&&r.url.includes('v4.webp'));
+            if(!ok){failed=true; console.error('FAIL PAGE',name,data,responses);}
             console.log('PROD',name,'pageStatus',resp?.status(),JSON.stringify(data),'assetResponses',JSON.stringify(responses));
             const footer=page.locator('footer').last();
             if(await footer.count()) await footer.screenshot({path:`qa-prod/${name}-footer.png`});
             await page.close();
           }
           const assetPage=await browser.newPage({viewport:{width:1200,height:700}});
-          await assetPage.goto(base+'/assets/selo_rodape_chama_atps_v2.webp',{waitUntil:'networkidle',timeout:60000});
-          const assetData=await assetPage.evaluate(()=>{
+          await assetPage.goto(base+'/assets/selo_rodape_chama_atps_v4.webp',{waitUntil:'networkidle',timeout:60000});
+          const assetData=await assetPage.evaluate(async()=>{
             const img=document.querySelector('img');
             if(!img) return {img:false};
+            await img.decode();
             const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
             const ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
             const d=ctx.getImageData(0,0,c.width,c.height).data;
@@ -60,12 +66,16 @@ jobs:
             return {img:true,w:img.naturalWidth,h:img.naturalHeight,nonTransparent,blueish,whiteish,total:c.width*c.height};
           });
           console.log('ASSET_PIXELS',JSON.stringify(assetData));
+          if(!assetData.img || assetData.nonTransparent<200000 || assetData.blueish<100000 || assetData.whiteish<20000){failed=true; console.error('FAIL ASSET PIXELS',assetData);}
           await assetPage.screenshot({path:'qa-prod/asset-direct.png',fullPage:true});
           await assetPage.close();
           await browser.close();
+          if(failed) process.exit(1);
+          console.log('QA PASS');
           EOF
           node qa-prod.mjs | tee qa-prod/metrics.log
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: production-footer-qa
           path: qa-prod
