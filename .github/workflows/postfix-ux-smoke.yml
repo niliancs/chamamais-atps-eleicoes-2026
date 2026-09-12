@@ -1,0 +1,85 @@
+name: Post-fix UX smoke
+on:
+  push:
+    branches: [postfix-ux-smoke-20260912]
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright and axe
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 @axe-core/playwright@4.10.2 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Run smoke QA against production
+        run: |
+          set -o pipefail
+          mkdir -p qa-postfix
+          cat > qa-postfix.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import AxeBuilder from '@axe-core/playwright';
+          import fs from 'fs';
+
+          const base='https://chamamais-atps-eleicoes-2026.vercel.app';
+          const pages=[['home','/'],['apoio-lula','/apoio-lula/'],['fundamentos','/fundamentos/'],['candidaturas','/candidaturas/']];
+          const viewports={desktop:{width:1440,height:900},mobile:{width:390,height:844}};
+          const browser=await chromium.launch({headless:true});
+          const report={generatedAt:new Date().toISOString(),pages:{},checks:[]};
+          let failed=false;
+
+          for(const [vpName,viewport] of Object.entries(viewports)){
+            for(const [name,path] of pages){
+              const context=await browser.newContext({viewport});
+              const page=await context.newPage();
+              const consoleErrors=[];
+              page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+              const resp=await page.goto(base+path,{waitUntil:'networkidle',timeout:60000});
+              await page.waitForTimeout(600);
+              const metrics=await page.evaluate(()=>{
+                const hero=document.querySelector('.brand-signature--hero');
+                const footer=document.querySelector('.brand-signature--footer');
+                const foot=document.querySelector('footer.foot');
+                const details=[...document.querySelectorAll('details>summary')].filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0}).map(el=>Math.round(el.getBoundingClientRect().height));
+                const navAffordance=[...document.querySelectorAll('.jump,.topnav')].map(el=>getComputedStyle(el,'::after').content);
+                return {
+                  overflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
+                  h1:document.querySelectorAll('h1').length,
+                  heroBg:hero?getComputedStyle(hero).backgroundImage:null,
+                  footerBg:footer?getComputedStyle(footer).backgroundImage:(foot?getComputedStyle(foot,'::before').backgroundImage:null),
+                  detailsMin:details.length?Math.min(...details):null,
+                  navAffordance,
+                  homeOpening:document.querySelector('.nota-opening')?{maxWidth:getComputedStyle(document.querySelector('.nota-opening')).maxWidth,lineHeight:getComputedStyle(document.querySelector('.nota-opening')).lineHeight}:null
+                };
+              });
+              const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+              const severe=axe.violations.filter(v=>['serious','critical'].includes(v.impact));
+              const key=`${name}-${vpName}`;
+              report.pages[key]={status:resp?.status(),...metrics,consoleErrors,severe:severe.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,targets:v.nodes.slice(0,8).map(n=>n.target)}))};
+              await page.screenshot({path:`qa-postfix/${key}-viewport.png`});
+              await page.screenshot({path:`qa-postfix/${key}-full.png`,fullPage:true});
+              if(resp?.status()!==200||metrics.h1!==1||metrics.overflow>0||consoleErrors.length||severe.length){failed=true;}
+              if(vpName==='mobile'&&metrics.detailsMin!==null&&metrics.detailsMin<44){failed=true;report.checks.push(`${key}: details summary min height ${metrics.detailsMin}px`)}
+              if(!String(metrics.heroBg).includes('assinatura_topo_chama_atps.png')){failed=true;report.checks.push(`${key}: hero asset changed`)}
+              if(!String(metrics.footerBg).includes('selo_rodape_chama_atps_v4.webp')){failed=true;report.checks.push(`${key}: footer asset changed`)}
+              await context.close();
+            }
+          }
+
+          fs.writeFileSync('qa-postfix/report.json',JSON.stringify(report,null,2));
+          fs.writeFileSync('qa-postfix/summary.txt',failed?'FAIL\n'+report.checks.join('\n'):'PASS — no serious/critical axe violations, no horizontal overflow, assets preserved and mobile details targets >=44px');
+          console.log(fs.readFileSync('qa-postfix/summary.txt','utf8'));
+          await browser.close();
+          if(failed) process.exit(1);
+          EOF
+          node qa-postfix.mjs | tee qa-postfix/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postfix-ux-smoke
+          path: qa-postfix
