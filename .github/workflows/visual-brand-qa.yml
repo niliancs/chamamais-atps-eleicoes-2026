@@ -63,11 +63,14 @@ jobs:
                   };
                 });
                 const icons=[...document.querySelectorAll('.brand-icon--megaphone')].map((el,i)=>({i,cls:el.className,transform:getComputedStyle(el).transform}));
+                const foot=document.querySelector('footer.foot');
+                const pseudo=foot?getComputedStyle(foot,'::before'):null;
                 return {
                   url:location.pathname,
                   horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
                   signatures:sigs,
                   megaphoneIcons:icons,
+                  footerPseudo: pseudo?{content:pseudo.content,backgroundImage:pseudo.backgroundImage,width:pseudo.width,height:pseudo.height}:null,
                   heroUsesConstructedSignature:!!document.querySelector('.hero .brand-signature--megaphone,.hero .brand-signature--brush.brand-signature--hero'),
                   heroUsesSingleImage:[...document.querySelectorAll('.hero img,header img')].some(img=>/assinatura_com_megafone_pincelada/i.test(img.getAttribute('src')||''))
                 };
@@ -81,9 +84,10 @@ jobs:
               for(let i=0;i<await icons.count();i++){
                 try{await icons.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-megaphone-${i}.png`});}catch(e){}
               }
-              await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
-              await page.waitForTimeout(300);
-              await page.screenshot({path:`qa-artifacts/${name}-${vpname}-bottom.png`});
+              const note=page.locator('.brand-heading-accent');
+              if(await note.count()) try{await note.first().screenshot({path:`qa-artifacts/${name}-${vpname}-note-heading.png`});}catch(e){}
+              const footer=page.locator('footer.foot');
+              if(await footer.count()) try{await footer.first().screenshot({path:`qa-artifacts/${name}-${vpname}-footer.png`});}catch(e){}
               await page.close();
             }
             await ctx.close();
