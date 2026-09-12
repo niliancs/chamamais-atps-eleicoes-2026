@@ -1,0 +1,54 @@
+name: Build footer asset
+on:
+  push:
+    branches: [build-footer-asset-20260912]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: build-footer-asset-20260912
+          persist-credentials: true
+      - name: Install render tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq inkscape imagemagick python3-pil
+      - name: Rebuild approved full-brush footer seal
+        run: |
+          set -euo pipefail
+          inkscape assets/pincelada_azul_preset.svg --export-width=1080 --export-filename=/tmp/brush.png >/dev/null 2>&1
+          magick /tmp/brush.png -trim +repage /tmp/brush_trim.png
+          inkscape assets/lettering_chama_atps.svg --export-width=456 --export-filename=/tmp/letter.png >/dev/null 2>&1
+          magick /tmp/letter.png -trim +repage /tmp/letter_trim.png
+          python3 - <<'PY'
+          from PIL import Image
+          brush=Image.open('/tmp/brush_trim.png').convert('RGBA')
+          letter=Image.open('/tmp/letter_trim.png').convert('RGBA')
+          assert brush.size==(889,362), brush.size
+          assert letter.size==(456,253), letter.size
+          letter=letter.resize((489,271),Image.Resampling.LANCZOS)
+          canvas=Image.new('RGBA',(1103,434),(0,0,0,0))
+          canvas.alpha_composite(brush,(107,36))
+          canvas.alpha_composite(letter,(225,82))
+          alpha=canvas.getchannel('A')
+          bbox=alpha.getbbox()
+          nonzero=sum(1 for v in alpha.getdata() if v>8)
+          print('asset',canvas.size,'bbox',bbox,'nonzero alpha',nonzero)
+          assert bbox==(107,36,996,398), bbox
+          assert nonzero>200000, nonzero
+          canvas.save('assets/selo_rodape_chama_atps_v4.webp','WEBP',lossless=True,method=6)
+          PY
+          file assets/selo_rodape_chama_atps_v4.webp
+      - name: Commit generated binary to build branch
+        run: |
+          git config user.name "Nílian Silva"
+          git config user.email "niliancs@gmail.com"
+          git add assets/selo_rodape_chama_atps_v4.webp
+          git commit -m "Build approved footer seal binary"
+          git push origin HEAD:build-footer-asset-20260912
