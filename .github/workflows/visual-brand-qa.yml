@@ -1,0 +1,99 @@
+name: Visual brand QA
+
+on:
+  push:
+    branches: [visual-qa-20260912]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Render and inspect
+        run: |
+          cat > /tmp/qa.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'fs';
+          const browser = await chromium.launch({headless:true});
+          const pages = [
+            ['home','/'],
+            ['apoio-lula','/apoio-lula/'],
+            ['fundamentos','/fundamentos/'],
+            ['candidaturas','/candidaturas/']
+          ];
+          const viewports = [
+            ['desktop',{width:1440,height:900}],
+            ['mobile',{width:390,height:844}]
+          ];
+          fs.mkdirSync('qa-artifacts',{recursive:true});
+          for (const [vpname, viewport] of viewports) {
+            const ctx = await browser.newContext({viewport});
+            for (const [name,path] of pages) {
+              const page = await ctx.newPage();
+              await page.goto('http://127.0.0.1:4173'+path,{waitUntil:'networkidle'});
+              await page.screenshot({path:`qa-artifacts/${name}-${vpname}-top.png`});
+              const metrics = await page.evaluate(() => {
+                const sigs = [...document.querySelectorAll('.brand-signature')].map((el,i)=>{
+                  const r=el.getBoundingClientRect();
+                  const lettering=el.querySelector('.brand-lettering');
+                  const brush=el.querySelector('.brand-brush-crop');
+                  const mega=el.querySelector('.brand-megaphone-crop');
+                  const lr=lettering?.getBoundingClientRect();
+                  const br=brush?.getBoundingClientRect();
+                  const mr=mega?.getBoundingClientRect();
+                  return {
+                    i,
+                    cls:el.className,
+                    box:{x:r.x,y:r.y,w:r.width,h:r.height},
+                    lettering:lr?{x:lr.x,y:lr.y,w:lr.width,h:lr.height}:null,
+                    brush:br?{x:br.x,y:br.y,w:br.width,h:br.height}:null,
+                    megaphone:mr?{x:mr.x,y:mr.y,w:mr.width,h:mr.height}:null,
+                    letteringContainedInBrush: (lr&&br)?(lr.left>=br.left-0.5 && lr.right<=br.right+0.5 && lr.top>=br.top-0.5 && lr.bottom<=br.bottom+0.5):null
+                  };
+                });
+                const icons=[...document.querySelectorAll('.brand-icon--megaphone')].map((el,i)=>({i,cls:el.className,transform:getComputedStyle(el).transform,html:el.outerHTML.slice(0,500)}));
+                return {
+                  url:location.pathname,
+                  scrollWidth:document.documentElement.scrollWidth,
+                  clientWidth:document.documentElement.clientWidth,
+                  horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                  signatures:sigs,
+                  megaphoneIcons:icons,
+                  heroHTML:(document.querySelector('.hero')||document.querySelector('header'))?.outerHTML.slice(0,1800) || null
+                };
+              });
+              console.log('QA',vpname,name,JSON.stringify(metrics));
+              const sigs=page.locator('.brand-signature');
+              for(let i=0;i<await sigs.count();i++){
+                try{ await sigs.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-signature-${i}.png`}); }catch(e){}
+              }
+              const icons=page.locator('.brand-icon--megaphone');
+              for(let i=0;i<await icons.count();i++){
+                try{ await icons.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-megaphone-${i}.png`}); }catch(e){}
+              }
+              await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+              await page.waitForTimeout(400);
+              await page.screenshot({path:`qa-artifacts/${name}-${vpname}-bottom.png`});
+              await page.close();
+            }
+            await ctx.close();
+          }
+          await browser.close();
+          EOF
+          node /tmp/qa.mjs | tee qa-artifacts/metrics.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visual-brand-qa
+          path: qa-artifacts
