@@ -23,9 +23,9 @@ jobs:
           sleep 2
       - name: Render and inspect
         run: |
-          cat > /tmp/qa.mjs <<'EOF'
+          mkdir -p qa-artifacts
+          cat > qa.mjs <<'EOF'
           import { chromium } from 'playwright';
-          import fs from 'fs';
           const browser = await chromium.launch({headless:true});
           const pages = [
             ['home','/'],
@@ -37,7 +37,6 @@ jobs:
             ['desktop',{width:1440,height:900}],
             ['mobile',{width:390,height:844}]
           ];
-          fs.mkdirSync('qa-artifacts',{recursive:true});
           for (const [vpname, viewport] of viewports) {
             const ctx = await browser.newContext({viewport});
             for (const [name,path] of pages) {
@@ -60,31 +59,30 @@ jobs:
                     lettering:lr?{x:lr.x,y:lr.y,w:lr.width,h:lr.height}:null,
                     brush:br?{x:br.x,y:br.y,w:br.width,h:br.height}:null,
                     megaphone:mr?{x:mr.x,y:mr.y,w:mr.width,h:mr.height}:null,
-                    letteringContainedInBrush: (lr&&br)?(lr.left>=br.left-0.5 && lr.right<=br.right+0.5 && lr.top>=br.top-0.5 && lr.bottom<=br.bottom+0.5):null
+                    letteringContainedInBrushBox:(lr&&br)?(lr.left>=br.left-0.5 && lr.right<=br.right+0.5 && lr.top>=br.top-0.5 && lr.bottom<=br.bottom+0.5):null
                   };
                 });
-                const icons=[...document.querySelectorAll('.brand-icon--megaphone')].map((el,i)=>({i,cls:el.className,transform:getComputedStyle(el).transform,html:el.outerHTML.slice(0,500)}));
+                const icons=[...document.querySelectorAll('.brand-icon--megaphone')].map((el,i)=>({i,cls:el.className,transform:getComputedStyle(el).transform}));
                 return {
                   url:location.pathname,
-                  scrollWidth:document.documentElement.scrollWidth,
-                  clientWidth:document.documentElement.clientWidth,
                   horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
                   signatures:sigs,
                   megaphoneIcons:icons,
-                  heroHTML:(document.querySelector('.hero')||document.querySelector('header'))?.outerHTML.slice(0,1800) || null
+                  heroUsesConstructedSignature:!!document.querySelector('.hero .brand-signature--megaphone,.hero .brand-signature--brush.brand-signature--hero'),
+                  heroUsesSingleImage:[...document.querySelectorAll('.hero img,header img')].some(img=>/assinatura_com_megafone_pincelada/i.test(img.getAttribute('src')||''))
                 };
               });
               console.log('QA',vpname,name,JSON.stringify(metrics));
               const sigs=page.locator('.brand-signature');
               for(let i=0;i<await sigs.count();i++){
-                try{ await sigs.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-signature-${i}.png`}); }catch(e){}
+                try{await sigs.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-signature-${i}.png`});}catch(e){}
               }
               const icons=page.locator('.brand-icon--megaphone');
               for(let i=0;i<await icons.count();i++){
-                try{ await icons.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-megaphone-${i}.png`}); }catch(e){}
+                try{await icons.nth(i).screenshot({path:`qa-artifacts/${name}-${vpname}-megaphone-${i}.png`});}catch(e){}
               }
               await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
-              await page.waitForTimeout(400);
+              await page.waitForTimeout(300);
               await page.screenshot({path:`qa-artifacts/${name}-${vpname}-bottom.png`});
               await page.close();
             }
@@ -92,7 +90,7 @@ jobs:
           }
           await browser.close();
           EOF
-          node /tmp/qa.mjs | tee qa-artifacts/metrics.log
+          node qa.mjs | tee qa-artifacts/metrics.log
       - uses: actions/upload-artifact@v4
         with:
           name: visual-brand-qa
