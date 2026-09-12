@@ -37,7 +37,7 @@
   width:clamp(108px,12vw,138px)!important;
   aspect-ratio:500/226!important;
   margin:0 0 .85rem;
-  background:url("selo_rodape_chama_atps_v2.webp") center/contain no-repeat;
+  background:url("selo_rodape_chama_atps_v4.webp") center/contain no-repeat;
   background-color:transparent;
   overflow:visible;
 }
@@ -50,7 +50,7 @@ footer.foot:not(:has(.brand-signature--footer))::before{
   width:clamp(108px,12vw,138px);
   aspect-ratio:500/226;
   margin:0 0 .85rem;
-  background:url("selo_rodape_chama_atps_v2.webp") center/contain no-repeat;
+  background:url("selo_rodape_chama_atps_v4.webp") center/contain no-repeat;
 }
 
 /* Nota de esclarecimento: o megafone fala para o título; os raios apontam para “Nota”. */
