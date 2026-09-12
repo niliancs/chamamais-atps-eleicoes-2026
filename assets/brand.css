@@ -11,9 +11,29 @@
 .brand-signature--megaphone .brand-brush-crop{width:80.586%;left:0;top:25.76%;aspect-ratio:889/362;z-index:1}
 .brand-signature--megaphone .brand-lettering{width:58%;left:8%;top:28%}
 .brand-signature--megaphone .brand-megaphone-crop{width:43.516%;left:56.41%;top:5.3%;aspect-ratio:484/257;z-index:3}
-.brand-signature--hero{margin:0 0 1rem}.brand-signature--small{width:clamp(108px,12vw,138px)}.brand-signature--footer{margin:0 0 .85rem}
+.brand-signature--hero{margin:0 0 1rem}
+.brand-signature--small{width:clamp(108px,12vw,138px)}
+.brand-signature--footer{margin:0 0 .85rem}
 .brand-icon{position:relative;display:inline-block;flex:0 0 auto;vertical-align:middle;line-height:0}
-.brand-icon--megaphone{width:clamp(30px,3.2vw,36px);aspect-ratio:484/257}.brand-icon--megaphone .brand-megaphone-crop{inset:0}
-.brand-heading-accent{display:flex;align-items:center;gap:.75rem}.brand-heading-accent>:last-child{margin:0}
-@media(max-width:620px){.brand-signature--brush{width:clamp(145px,43vw,170px)}.brand-signature--megaphone{width:clamp(150px,48vw,180px)}.brand-signature--small{width:108px}.brand-signature--hero{margin-bottom:.8rem}.brand-heading-accent{gap:.6rem}}
+.brand-icon--megaphone{width:clamp(30px,3.2vw,36px);aspect-ratio:484/257}
+.brand-icon--megaphone .brand-megaphone-crop{inset:0}
+.brand-heading-accent{display:flex;align-items:center;gap:.75rem}
+.brand-heading-accent>:last-child{margin:0}
+
+/* Topos: assinatura completa, com megafone, também nas páginas que antes usavam apenas a pincelada. */
+.brand-signature--brush.brand-signature--hero{width:clamp(160px,19vw,215px);aspect-ratio:273/132}
+.brand-signature--brush.brand-signature--hero .brand-brush-crop{width:80.586%;left:0;top:25.76%;aspect-ratio:889/362}
+.brand-signature--brush.brand-signature--hero .brand-lettering{width:58%;height:auto;left:8%;top:28%}
+.brand-signature--brush.brand-signature--hero::after{content:"";position:absolute;z-index:3;width:43.516%;left:56.41%;top:5.3%;aspect-ratio:484/257;background:url("megafone_mao.svg") 45.97% 47.76%/223.1405% auto no-repeat}
+
+/* Rodapés: selo reto aprovado — lettering 55% x 75,5% da área visível da pincelada. */
+.brand-signature--footer{aspect-ratio:889/362}
+.brand-signature--footer .brand-brush-crop{width:100%;height:100%;left:0;top:0;aspect-ratio:auto}
+.brand-signature--footer .brand-lettering{width:55%;height:75.5%;left:22.5%;top:12.25%}
+footer.foot:not(:has(.brand-signature--footer))::before{content:"";display:block;width:clamp(108px,12vw,138px);aspect-ratio:889/362;margin:0 0 .85rem;background-image:url("lettering_chama_atps.svg"),url("pincelada_azul_preset.svg");background-repeat:no-repeat,no-repeat;background-size:55% 75.5%,121.4848% auto;background-position:50% 50%,51.31% 49.89%}
+
+/* Nota de esclarecimento: o megafone fala para o título; os raios apontam para “Nota”. */
+.brand-heading-accent .brand-icon--megaphone{transform:scaleX(-1)}
+
+@media(max-width:620px){.brand-signature--brush{width:clamp(145px,43vw,170px)}.brand-signature--megaphone{width:clamp(150px,48vw,180px)}.brand-signature--brush.brand-signature--hero{width:clamp(150px,48vw,180px)}.brand-signature--small{width:108px}.brand-signature--hero{margin-bottom:.8rem}.brand-heading-accent{gap:.6rem}footer.foot:not(:has(.brand-signature--footer))::before{width:108px}}
 @media print{.brand-signature,.brand-icon{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
