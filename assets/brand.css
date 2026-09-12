@@ -33,11 +33,23 @@
 .brand-signature--hero .brand-megaphone-crop{display:none!important}
 .brand-signature--hero::after{content:none!important}
 
-/* Rodapés: selo reto aprovado — lettering 55% x 75,5% da área visível da pincelada. */
-.brand-signature--footer{aspect-ratio:889/362}
-.brand-signature--footer .brand-brush-crop{width:100%;height:100%;left:0;top:0;aspect-ratio:auto}
-.brand-signature--footer .brand-lettering{width:55%;height:75.5%;left:22.5%;top:12.25%}
-footer.foot:not(:has(.brand-signature--footer))::before{content:"";display:block;width:clamp(108px,12vw,138px);aspect-ratio:889/362;margin:0 0 .85rem;background-image:url("lettering_chama_atps.svg"),url("pincelada_azul_preset.svg");background-repeat:no-repeat,no-repeat;background-size:55% 75.5%,121.4848% auto;background-position:50% 50%,51.31% 49.89%}
+/* Rodapés: usar o selo reto aprovado como asset único, sem reconstrução em CSS. */
+.brand-signature--footer{
+  aspect-ratio:500/226;
+  background:url("selo_rodape_chama_atps.webp") center/contain no-repeat;
+  overflow:visible;
+}
+.brand-signature--footer .brand-brush-crop,
+.brand-signature--footer .brand-lettering,
+.brand-signature--footer .brand-megaphone-crop{display:none!important}
+footer.foot:not(:has(.brand-signature--footer))::before{
+  content:"";
+  display:block;
+  width:clamp(108px,12vw,138px);
+  aspect-ratio:500/226;
+  margin:0 0 .85rem;
+  background:url("selo_rodape_chama_atps.webp") center/contain no-repeat;
+}
 
 /* Nota de esclarecimento: o megafone fala para o título; os raios apontam para “Nota”. */
 .brand-heading-accent .brand-icon--megaphone{transform:scaleX(-1)}
