@@ -1,0 +1,109 @@
+name: Rendered brand QA
+
+on:
+  push:
+    branches: [brand-visual-fix]
+
+permissions:
+  contents: read
+
+jobs:
+  render-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare browser QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/renderqa
+          cd /tmp/renderqa
+          npm init -y >/dev/null 2>&1
+          npm install --silent playwright
+          CHROME="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$CHROME" ]; then
+            npx playwright install chromium
+          else
+            echo "CHROME_PATH=$CHROME" >> "$GITHUB_ENV"
+          fi
+      - name: Run four-page rendered QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/chamamais-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 1
+          NODE_PATH=/tmp/renderqa/node_modules node <<'JS'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const launchOpts = {headless:true};
+          if (process.env.CHROME_PATH) launchOpts.executablePath = process.env.CHROME_PATH;
+          (async()=>{
+            const browser = await chromium.launch(launchOpts);
+            const cases = [
+              {name:'desktop', width:1440, height:900},
+              {name:'mobile', width:390, height:844},
+            ];
+            const pages = [
+              ['home','/'],
+              ['apoio-lula','/apoio-lula/'],
+              ['fundamentos','/fundamentos/'],
+              ['candidaturas','/candidaturas/'],
+            ];
+            let failures=[];
+            for (const vp of cases) {
+              const ctx = await browser.newContext({viewport:{width:vp.width,height:vp.height}});
+              for (const [name,path] of pages) {
+                const page = await ctx.newPage();
+                await page.goto('http://127.0.0.1:8000'+path,{waitUntil:'networkidle'});
+                const result = await page.evaluate(({name,mode})=>{
+                  const root=document.documentElement;
+                  const overflow=root.scrollWidth-root.clientWidth;
+                  const signatures=[...document.querySelectorAll('.brand-signature')].map((el,i)=>{
+                    const r=el.getBoundingClientRect();
+                    const letter=el.querySelector('.brand-lettering');
+                    const brush=el.querySelector('.brand-brush-crop');
+                    const lr=letter?letter.getBoundingClientRect():null;
+                    const br=brush?brush.getBoundingClientRect():null;
+                    const letteringInsideBrush=(!lr||!br) ? true :
+                      lr.left>=br.left-1 && lr.right<=br.right+1 && lr.top>=br.top-1 && lr.bottom<=br.bottom+1;
+                    return {i,x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom,letteringInsideBrush,
+                      letter:lr&&{x:lr.x,y:lr.y,w:lr.width,h:lr.height,right:lr.right,bottom:lr.bottom},
+                      brush:br&&{x:br.x,y:br.y,w:br.width,h:br.height,right:br.right,bottom:br.bottom}};
+                  });
+                  let hero=null;
+                  if(name==='apoio-lula'){
+                    const h=document.querySelector('header.hero');
+                    const kids=[...h.children].map(x=>x.getBoundingClientRect());
+                    hero={childCount:kids.length, kids:kids.map(r=>({x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom}))};
+                    if(mode==='desktop' && kids.length===2) hero.sideBySide=kids[0].right<=kids[1].left+1;
+                    if(mode==='mobile' && kids.length===2) hero.stacked=kids[1].top>=kids[0].bottom-1;
+                  }
+                  return {name,mode,viewport:[innerWidth,innerHeight],overflow,signatures,hero};
+                },{name,mode:vp.name});
+                console.log('RENDER_QA',JSON.stringify(result));
+                if(result.overflow>1) failures.push(`${vp.name}/${name}: horizontal overflow ${result.overflow}px`);
+                for(const s of result.signatures){
+                  if(s.w<=0||s.h<=0) failures.push(`${vp.name}/${name}: assinatura ${s.i} sem dimensao`);
+                  if(s.x < -1 || s.right > vp.width+1) failures.push(`${vp.name}/${name}: assinatura ${s.i} fora do viewport`);
+                  if(!s.letteringInsideBrush) failures.push(`${vp.name}/${name}: lettering ${s.i} vaza da pincelada`);
+                }
+                if(name==='apoio-lula'){
+                  if(!result.hero || result.hero.childCount!==2) failures.push(`${vp.name}/apoio-lula: hero nao tem 2 filhos diretos`);
+                  if(vp.name==='desktop' && !result.hero.sideBySide) failures.push('desktop/apoio-lula: conteudo e selo nao estao lado a lado');
+                  if(vp.name==='mobile' && !result.hero.stacked) failures.push('mobile/apoio-lula: conteudo e selo nao empilham corretamente');
+                }
+                await page.screenshot({path:`/tmp/${name}-${vp.name}.png`,fullPage:true});
+                await page.close();
+              }
+              await ctx.close();
+            }
+            await browser.close();
+            if(failures.length){
+              console.error('RENDER QA FAIL\n'+failures.join('\n'));
+              process.exit(1);
+            }
+            console.log('RENDER QA PASS — 4 páginas × desktop/mobile; sem overflow horizontal; lettering contido; hero Lula correto.');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
