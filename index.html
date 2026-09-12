@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chama + ATPS — Posicionamento eleitoral e documentos</title>
-  <meta name="description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, publicação em 13/09/2026.">
+  <meta name="description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, consulta ao grupo do CR em 11–12/09/2026 e publicação em 13/09/2026.">
   <!-- SEO/OG: URL canônica de produção -->
   <link rel="canonical" href="https://chamamais-atps-eleicoes-2026.vercel.app/">
   <meta property="og:title" content="Chama + ATPS — Posicionamento eleitoral e documentos">
-  <meta property="og:description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, publicação em 13/09/2026.">
+  <meta property="og:description" content="Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026. Deliberação em 09/09/2026, consulta ao grupo do CR em 11–12/09/2026 e publicação em 13/09/2026.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://chamamais-atps-eleicoes-2026.vercel.app/">
   <meta name="twitter:card" content="summary">
@@ -172,6 +172,24 @@
       font-weight: 400;
       color: var(--cm-muted);
     }
+
+
+    /* ─── Consulta ao grupo do CR ─────────────────────────────── */
+    .consulta-box {
+      margin: 2rem 0 0;
+      border-top: 1px solid var(--cm-line);
+      border-bottom: 1px solid var(--cm-line);
+      background: var(--cm-cyan);
+      padding: 1.4rem 1.25rem;
+    }
+    @media (min-width: 600px) { .consulta-box { padding: 1.6rem 1.75rem; } }
+    .consulta-box h3 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--cm-navy); }
+    .consulta-box .consulta-desc, .consulta-box .consulta-limit { margin: .75rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }
+    .consulta-result { padding: 1rem 0; border-bottom: 1px solid var(--cm-line); }
+    .consulta-result:last-of-type { border-bottom: 0; padding-bottom: .25rem; }
+    .consulta-result strong { display: block; color: var(--cm-navy); }
+    .consulta-result .number { margin-top: .35rem; color: var(--cm-blue); font-weight: 600; }
+    .consulta-result p { margin: .3rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }
 
     /* ─── Seção de documentos ─────────────────────────────────── */
     .docs-section { margin-top: 4rem; }
@@ -341,7 +359,7 @@
       <p class="eyebrow">Eleições 2026</p>
       <h1>Chama + ATPS — Posicionamento eleitoral e documentos</h1>
       <p class="subtitle">Nota, fundamentos e levantamento atualizado de candidaturas — Eleições 2026</p>
-      <p class="dates">Deliberação 09/09/2026 · publicação 13/09/2026</p>
+      <p class="dates">Deliberação da Comissão 09/09/2026 · consulta ao grupo do CR 11–12/09/2026 · publicação 13/09/2026</p>
       <div class="accent-bar" aria-hidden="true"></div>
     </div>
   </header>
@@ -355,8 +373,30 @@
 
       <p class="nota-opening">
         A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de
-        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, após análise comparativa dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário eleitoral consultado, em 9 de setembro de 2026, manifestar apoio à candidatura de Lula à Presidência da República. Eventuais apoios adicionais a outras candidaturas serão identificados explicitamente, a partir de critérios relacionados à defesa da democracia e das políticas sociais, ao fortalecimento da capacidade do Estado, à valorização do serviço público federal e ao respeito ao princípio constitucional do concurso público, previsto no art. 37, II, da Constituição Federal de 1988.
+        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, após análise comparativa
+        dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário eleitoral
+        consultado, em 9 de setembro de 2026, manifestar apoio público à candidatura de Lula à
+        Presidência da República. Em consulta posterior de 24 horas, realizada em 11 e 12 de setembro
+        de 2026 no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no
+        Cadastro Reserva, houve maioria favorável à divulgação de candidaturas parlamentares
+        selecionadas segundo critérios públicos e verificáveis.
       </p>
+
+      <aside class="consulta-box" aria-labelledby="consulta-titulo">
+        <h3 id="consulta-titulo">Consulta ao grupo do CR</h3>
+        <p class="consulta-desc">A consulta ocorreu voluntariamente durante 24 horas, em 11–12/09/2026, no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva.</p>
+        <div class="consulta-result">
+          <strong>Apoio público a Lula</strong>
+          <div class="number">117 de 123 participantes · 95,1% favoráveis</div>
+          <p>0 votos “NÃO”; 6 participantes (4,9%) preferiram que o movimento não se manifestasse eleitoralmente.</p>
+        </div>
+        <div class="consulta-result">
+          <strong>Divulgação de candidaturas parlamentares</strong>
+          <div class="number">93 de 103 participantes · 90,3% favoráveis</div>
+          <p>6 participantes (5,8%) votaram “NÃO”; 4 participantes (3,9%) preferiram apenas o posicionamento presidencial.</p>
+        </div>
+        <p class="consulta-limit">Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade da decisão da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva.</p>
+      </aside>
 
       <p class="nota-intro">Esclarecemos que:</p>
 
@@ -365,10 +405,8 @@
         <li class="nota-item">
           <h3><span class="num">1.</span> Representatividade</h3>
           <div class="paragraphs">
-            <p>Esta decisão expressa o posicionamento da Comissão do Cadastro Reserva de ATPS do
-            CPNU 1. Não pressupõe unanimidade entre as pessoas integrantes do cadastro reserva,
-            não substitui suas escolhas individuais e não deve ser interpretada como manifestação
-            institucional de toda a carreira de ATPS.</p>
+            <p>A decisão de manifestar apoio eleitoral foi deliberada pela Comissão do Cadastro Reserva de ATPS do CPNU 1 em 9 de setembro de 2026. Posteriormente, o posicionamento foi submetido a uma consulta de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, composto por pessoas que permanecem no Cadastro Reserva. Entre as pessoas que participaram das consultas, houve maioria favorável ao apoio público a Lula e à divulgação de candidaturas parlamentares segundo critérios públicos e verificáveis.</p>
+            <p>A consulta reforça a legitimidade do posicionamento, mas não pressupõe unanimidade entre todas as pessoas integrantes do Cadastro Reserva, não substitui suas escolhas individuais e não deve ser interpretada como manifestação institucional de toda a carreira de ATPS, do MGI ou da Andeps.</p>
           </div>
         </li>
 
@@ -392,6 +430,7 @@
         <li class="nota-item">
           <h3><span class="num">4.</span> Levantamento parlamentar e apoio eleitoral</h3>
           <div class="paragraphs">
+            <p>A consulta registrou maioria favorável à possibilidade de o movimento divulgar candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>
             <p>O levantamento de candidaturas reúne informações sobre parlamentares e demais
             candidaturas que tiveram atuação documentada relacionada à carreira de ATPS, ao cadastro
             reserva, ao CPNU, ao serviço público, a políticas sociais ou a temas correlatos.</p>
@@ -425,8 +464,7 @@
       </ol>
 
       <p class="nota-close">
-        Nosso objetivo é oferecer transparência sobre a decisão tomada, permitir que os fundamentos
-        sejam verificados e preservar a autonomia de cada pessoa para formar sua própria posição.
+        A finalidade desta nota é dar publicidade à decisão do colegiado e à consulta posterior, delimitar quem ela representa, permitir que os fundamentos sejam verificados e preservar a autonomia de cada pessoa para formar sua própria posição.
       </p>
 
       <div class="nota-signature">
@@ -506,6 +544,10 @@
           compromisso, autoria ou coautoria de ato formal, subscrição, atuação administrativa e
           participação em eventos. Essas categorias não são equivalentes entre si.
         </p>
+        <p>
+          A consulta sobre candidaturas parlamentares refere-se à divulgação segundo critérios
+          públicos e verificáveis, não à aprovação automática de cada nome presente no painel.
+        </p>
       </div>
     </section>
 
@@ -515,8 +557,8 @@
     <div class="inner">
       <div class="brand-signature brand-signature--brush brand-signature--small brand-signature--footer" aria-hidden="true"><span class="brand-brush-crop"><img src="assets/pincelada_azul_preset.svg" alt=""></span><img class="brand-lettering" src="assets/lettering_chama_atps.svg" alt=""></div>
       <p class="footer-org">Comissão do Cadastro Reserva de ATPS — CPNU 1 · Movimento #ChamaMaisATPS</p>
-      <p>Deliberação: 09/09/2026 · Publicação: 13/09/2026</p>
-      <p>Versão pública consolidada em 11/09/2026 · Conteúdo sujeito a atualização quando houver nova evidência documentada.</p>
+      <p>Deliberação: 09/09/2026 · Consulta ao grupo do CR: 11–12/09/2026 · Publicação: 13/09/2026</p>
+      <p>Versão pública atualizada em 12/09/2026 · Conteúdo sujeito a atualização quando houver nova evidência documentada.</p>
     </div>
   </footer>
 
