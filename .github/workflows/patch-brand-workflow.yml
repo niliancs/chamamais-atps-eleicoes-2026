@@ -16,41 +16,43 @@ jobs:
           import re
           p = Path('.github/workflows/add-brand-signatures.yml')
           s = p.read_text(encoding='utf-8')
-          replacement = r'''      - name: Reconstruct and verify canonical brand assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p assets
-          cat .brand-tmp/megafone.part* | base64 -d > assets/megafone_mao.svg
-          python - <<'PY2'
-          from pathlib import Path
-          for f, n in [('assets/lettering_chama_atps.svg', 5100), ('assets/pincelada_azul_preset.svg', 8114)]:
-              b = Path(f).read_bytes()
-              if len(b) == n + 1 and b.endswith(b'\n'):
-                  Path(f).write_bytes(b[:-1])
-          PY2
-          echo "66260e15f948fb96143a4315aa2a01ed722f2aa31670ba4aaf301f666af344fa  assets/lettering_chama_atps.svg" | sha256sum -c -
-          echo "f8ecb5989158d39c07b3b6dfe007f20c1bee7f6e9124dbc5e35ac56bc4ad14e7  assets/megafone_mao.svg" | sha256sum -c -
-          echo "1cade3431f9d0b2dc51a0bacd4c47cebf8c8a1a3414c37385d88da87fb4284be  assets/pincelada_azul_preset.svg" | sha256sum -c -
-'''
+          replacement = "\n".join([
+              "      - name: Reconstruct and verify canonical brand assets",
+              "        shell: bash",
+              "        run: |",
+              "          set -euo pipefail",
+              "          mkdir -p assets",
+              "          cat .brand-tmp/megafone.part* | base64 -d > assets/megafone_mao.svg",
+              "          python - <<'PY2'",
+              "          from pathlib import Path",
+              "          for f, n in [('assets/lettering_chama_atps.svg', 5100), ('assets/pincelada_azul_preset.svg', 8114)]:",
+              "              b = Path(f).read_bytes()",
+              "              if len(b) == n + 1 and b.endswith(b'\\n'):",
+              "                  Path(f).write_bytes(b[:-1])",
+              "          PY2",
+              "          echo \"66260e15f948fb96143a4315aa2a01ed722f2aa31670ba4aaf301f666af344fa  assets/lettering_chama_atps.svg\" | sha256sum -c -",
+              "          echo \"f8ecb5989158d39c07b3b6dfe007f20c1bee7f6e9124dbc5e35ac56bc4ad14e7  assets/megafone_mao.svg\" | sha256sum -c -",
+              "          echo \"1cade3431f9d0b2dc51a0bacd4c47cebf8c8a1a3414c37385d88da87fb4284be  assets/pincelada_azul_preset.svg\" | sha256sum -c -",
+          ]) + "\n"
           pat = r"      - name: Download and verify canonical brand assets\n.*?(?=      - name: Create shared brand component styles\n)"
           s2, n = re.subn(pat, replacement, s, count=1, flags=re.S)
           if n == 0:
               print('asset step already patched')
               s2 = s
-          commit_repl = r'''      - name: Commit implementation
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          rm -f .brand-trigger
-          rm -rf .brand-tmp
-          rm -f .github/workflows/add-brand-signatures.yml .github/workflows/patch-brand-workflow.yml
-          git add -A
-          git commit -m 'Add canonical brand signatures to microsite'
-          git push
-'''
+          commit_repl = "\n".join([
+              "      - name: Commit implementation",
+              "        shell: bash",
+              "        run: |",
+              "          set -euo pipefail",
+              "          git config user.name github-actions[bot]",
+              "          git config user.email 41898282+github-actions[bot]@users.noreply.github.com",
+              "          rm -f .brand-trigger",
+              "          rm -rf .brand-tmp",
+              "          rm -f .github/workflows/add-brand-signatures.yml .github/workflows/patch-brand-workflow.yml",
+              "          git add -A",
+              "          git commit -m 'Add canonical brand signatures to microsite'",
+              "          git push",
+          ]) + "\n"
           pat2 = r"      - name: Commit implementation\n.*\Z"
           s3, n2 = re.subn(pat2, commit_repl, s2, count=1, flags=re.S)
           if n2 == 0:
