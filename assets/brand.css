@@ -69,7 +69,7 @@ footer.foot:not(:has(.brand-signature--footer))::before{
 .more>summary,
 .caveat.more>summary{color:#24586d!important}
 .filters #csv{color:#213a42!important}
-.buttons #csv{color:#fff!important}
+.buttons #csv{background:#22755c!important;color:#fff!important}
 .nota-opening{max-width:64ch;text-wrap:pretty}
 html,body{max-width:100%;overflow-x:clip}
 
