@@ -1,0 +1,89 @@
+name: Visual top asset QA
+
+on:
+  push:
+    branches: [visual-qa-top-asset-20260912]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Render and inspect
+        run: |
+          mkdir -p qa-artifacts
+          cat > qa.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const pages = [
+            ['home','/'],
+            ['apoio-lula','/apoio-lula/'],
+            ['fundamentos','/fundamentos/'],
+            ['candidaturas','/candidaturas/']
+          ];
+          const viewports = [
+            ['desktop',{width:1440,height:900}],
+            ['mobile',{width:390,height:844}]
+          ];
+          let failed=false;
+          for (const [vpname, viewport] of viewports) {
+            const ctx = await browser.newContext({viewport});
+            for (const [name,path] of pages) {
+              const page = await ctx.newPage();
+              await page.goto('http://127.0.0.1:4173'+path,{waitUntil:'networkidle'});
+              const m = await page.evaluate(() => {
+                const hero=document.querySelector('.brand-signature--hero');
+                const hs=hero?getComputedStyle(hero):null;
+                const footer=document.querySelector('.brand-signature--footer');
+                const letter=footer?.querySelector('.brand-lettering');
+                const brush=footer?.querySelector('.brand-brush-crop');
+                const lr=letter?.getBoundingClientRect();
+                const br=brush?.getBoundingClientRect();
+                const note=document.querySelector('.brand-heading-accent .brand-icon--megaphone');
+                const ns=note?getComputedStyle(note):null;
+                return {
+                  overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                  heroBg:hs?.backgroundImage || null,
+                  heroBrushDisplay:hero?.querySelector('.brand-brush-crop')?getComputedStyle(hero.querySelector('.brand-brush-crop')).display:null,
+                  heroLetterDisplay:hero?.querySelector('.brand-lettering')?getComputedStyle(hero.querySelector('.brand-lettering')).display:null,
+                  heroMegaDisplay:hero?.querySelector('.brand-megaphone-crop')?getComputedStyle(hero.querySelector('.brand-megaphone-crop')).display:null,
+                  footerContained:(lr&&br)?(lr.left>=br.left-.5&&lr.right<=br.right+.5&&lr.top>=br.top-.5&&lr.bottom<=br.bottom+.5):null,
+                  noteTransform:ns?.transform || null
+                };
+              });
+              console.log('QA',vpname,name,JSON.stringify(m));
+              const heroOk = !!m.heroBg && m.heroBg.includes('assinatura_topo_chama_atps.webp') && m.heroBrushDisplay==='none' && m.heroLetterDisplay==='none' && (m.heroMegaDisplay===null || m.heroMegaDisplay==='none');
+              if(!heroOk){ console.error('FAIL HERO',vpname,name,m); failed=true; }
+              if(m.footerContained===false){ console.error('FAIL FOOTER',vpname,name,m); failed=true; }
+              if(m.overflow>2){ console.error('FAIL OVERFLOW',vpname,name,m); failed=true; }
+              if(name==='home' && m.noteTransform && !m.noteTransform.includes('-1')){ console.error('FAIL NOTE DIRECTION',vpname,name,m); failed=true; }
+              await page.screenshot({path:`qa-artifacts/${name}-${vpname}-top.png`,fullPage:false});
+              if(await page.locator('.brand-signature--hero').count()) await page.locator('.brand-signature--hero').first().screenshot({path:`qa-artifacts/${name}-${vpname}-hero.png`});
+              if(await page.locator('.brand-signature--footer').count()) await page.locator('.brand-signature--footer').first().screenshot({path:`qa-artifacts/${name}-${vpname}-footer.png`});
+              if(name==='home' && await page.locator('.brand-heading-accent').count()) await page.locator('.brand-heading-accent').first().screenshot({path:`qa-artifacts/${name}-${vpname}-note.png`});
+              await page.close();
+            }
+            await ctx.close();
+          }
+          await browser.close();
+          if(failed) process.exit(1);
+          console.log('QA PASS');
+          EOF
+          node qa.mjs | tee qa-artifacts/metrics.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-top-asset-qa
+          path: qa-artifacts
