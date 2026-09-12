@@ -1,0 +1,258 @@
+name: Add canonical brand signatures
+on: [push]
+permissions:
+  contents: write
+jobs:
+  implement:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify canonical brand assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          get_asset() {
+            local id="$1" out="$2" expected="$3"
+            curl -L --fail --retry 2 --retry-delay 2 \
+              "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
+              -o "$out" || \
+            curl -L --fail --retry 2 --retry-delay 2 \
+              "https://drive.google.com/uc?export=download&id=${id}&confirm=t" \
+              -o "$out"
+            echo "${expected}  ${out}" | sha256sum -c -
+          }
+          get_asset "10QxLKDQxwNx5RE_BH-c7oKAMnyj52mr1" "assets/lettering_chama_atps.svg" "66260e15f948fb96143a4315aa2a01ed722f2aa31670ba4aaf301f666af344fa"
+          get_asset "1yK8PvrGJOMf3a3fK3nyAFilQz46B1Gf5" "assets/megafone_mao.svg" "f8ecb5989158d39c07b3b6dfe007f20c1bee7f6e9124dbc5e35ac56bc4ad14e7"
+          get_asset "1KXzPTyQlTqg8xB51GVj9etP8tSDMk2R_" "assets/pincelada_azul_preset.svg" "1cade3431f9d0b2dc51a0bacd4c47cebf8c8a1a3414c37385d88da87fb4284be"
+      - name: Create shared brand component styles
+        shell: bash
+        run: |
+          cat > assets/brand.css <<'CSS'
+          /* Chama + ATPS · componentes de assinatura canônica
+             Ativos originais preservados: lettering, pincelada e megafone. */
+          .brand-signature {
+            position: relative;
+            display: block;
+            flex: 0 0 auto;
+            max-width: 100%;
+            line-height: 0;
+            isolation: isolate;
+          }
+          .brand-signature img,
+          .brand-icon img {
+            display: block;
+            max-width: none !important;
+            height: auto;
+          }
+          .brand-brush-crop,
+          .brand-megaphone-crop {
+            position: absolute;
+            display: block;
+            overflow: hidden;
+          }
+          .brand-brush-crop img {
+            position: absolute;
+            width: 121.4848%;
+            left: -11.0236%;
+            top: -136.1878%;
+          }
+          .brand-megaphone-crop img {
+            position: absolute;
+            width: 223.1405%;
+            left: -56.6116%;
+            top: -203.1128%;
+          }
+          .brand-signature .brand-lettering {
+            position: absolute;
+            z-index: 2;
+          }
+
+          /* Assinatura editorial: lettering branco sobre a pincelada azul. */
+          .brand-signature--brush {
+            width: clamp(150px, 19vw, 220px);
+            aspect-ratio: 220 / 132;
+          }
+          .brand-signature--brush .brand-brush-crop {
+            width: 100%;
+            left: 0;
+            top: 25.76%;
+            aspect-ratio: 889 / 362;
+            z-index: 1;
+          }
+          .brand-signature--brush .brand-lettering {
+            width: 88%;
+            left: 5.5%;
+            top: 16.67%;
+          }
+
+          /* Assinatura de mobilização: lettering + pincelada + megafone. */
+          .brand-signature--megaphone {
+            width: clamp(175px, 22vw, 240px);
+            aspect-ratio: 273 / 132;
+          }
+          .brand-signature--megaphone .brand-brush-crop {
+            width: 80.586%;
+            left: 0;
+            top: 25.76%;
+            aspect-ratio: 889 / 362;
+            z-index: 1;
+          }
+          .brand-signature--megaphone .brand-lettering {
+            width: 70.916%;
+            left: 4.43%;
+            top: 16.67%;
+          }
+          .brand-signature--megaphone .brand-megaphone-crop {
+            width: 43.516%;
+            left: 56.41%;
+            top: 5.3%;
+            aspect-ratio: 484 / 257;
+            z-index: 3;
+          }
+
+          .brand-signature--hero { margin: 0 0 1rem; }
+          .brand-signature--small { width: clamp(108px, 12vw, 138px); }
+          .brand-signature--footer { margin: 0 0 .85rem; }
+
+          /* Megafone isolado é pontuação visual, não assinatura. */
+          .brand-icon {
+            position: relative;
+            display: inline-block;
+            flex: 0 0 auto;
+            vertical-align: middle;
+            line-height: 0;
+          }
+          .brand-icon--megaphone {
+            width: clamp(30px, 3.2vw, 36px);
+            aspect-ratio: 484 / 257;
+          }
+          .brand-icon--megaphone .brand-megaphone-crop { inset: 0; }
+          .brand-heading-accent {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+          }
+          .brand-heading-accent > :last-child { margin: 0; }
+
+          @media (max-width: 620px) {
+            .brand-signature--brush { width: clamp(148px, 45vw, 175px); }
+            .brand-signature--megaphone { width: clamp(165px, 54vw, 190px); }
+            .brand-signature--small { width: 108px; }
+            .brand-signature--hero { margin-bottom: .8rem; }
+            .brand-heading-accent { gap: .6rem; }
+          }
+          @media print {
+            .brand-signature,
+            .brand-icon { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+          CSS
+      - name: Place signatures by editorial function
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          BRUSH_ROOT = '''<div class="brand-signature brand-signature--brush brand-signature--hero" role="img" aria-label="Chama + ATPS">
+                <span class="brand-brush-crop" aria-hidden="true"><img src="assets/pincelada_azul_preset.svg" alt=""></span>
+                <img class="brand-lettering" src="assets/lettering_chama_atps.svg" alt="" aria-hidden="true">
+              </div>'''
+          BRUSH_SUB = '''<div class="brand-signature brand-signature--brush brand-signature--hero" role="img" aria-label="Chama + ATPS">
+          <span class="brand-brush-crop" aria-hidden="true"><img src="../assets/pincelada_azul_preset.svg" alt=""></span>
+          <img class="brand-lettering" src="../assets/lettering_chama_atps.svg" alt="" aria-hidden="true">
+          </div>'''
+          MEGA_SUB = '''<div class="brand-signature brand-signature--megaphone brand-signature--hero" role="img" aria-label="Chama + ATPS">
+          <span class="brand-brush-crop" aria-hidden="true"><img src="../assets/pincelada_azul_preset.svg" alt=""></span>
+          <img class="brand-lettering" src="../assets/lettering_chama_atps.svg" alt="" aria-hidden="true">
+          <span class="brand-megaphone-crop" aria-hidden="true"><img src="../assets/megafone_mao.svg" alt=""></span>
+          </div>'''
+          FOOT_ROOT = '''<div class="brand-signature brand-signature--brush brand-signature--small brand-signature--footer" aria-hidden="true">
+              <span class="brand-brush-crop"><img src="assets/pincelada_azul_preset.svg" alt=""></span>
+              <img class="brand-lettering" src="assets/lettering_chama_atps.svg" alt="">
+            </div>'''
+          FOOT_SUB = '''<div class="brand-signature brand-signature--brush brand-signature--small brand-signature--footer" aria-hidden="true">
+          <span class="brand-brush-crop"><img src="../assets/pincelada_azul_preset.svg" alt=""></span>
+          <img class="brand-lettering" src="../assets/lettering_chama_atps.svg" alt="">
+          </div>'''
+          ICON_ROOT = '''<span class="brand-icon brand-icon--megaphone" aria-hidden="true"><span class="brand-megaphone-crop"><img src="assets/megafone_mao.svg" alt=""></span></span>'''
+
+          def load(path):
+              return Path(path).read_text(encoding='utf-8')
+          def save(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+          def once(text, old, new, label):
+              n = text.count(old)
+              if n != 1:
+                  raise SystemExit(f'{label}: expected exactly 1 occurrence, found {n}')
+              return text.replace(old, new, 1)
+
+          # Home: pincelada no hero, megafone na nota, pincelada no rodapé.
+          p='index.html'; s=load(p)
+          s=once(s, '<link rel="stylesheet" href="assets/styles.css">', '<link rel="stylesheet" href="assets/styles.css">\n  <link rel="stylesheet" href="assets/brand.css">', 'home css')
+          s=once(s, '<header class="lp-header">\n    <div class="inner">', '<header class="lp-header">\n    <div class="inner">\n      '+BRUSH_ROOT, 'home hero')
+          old='<h2 id="nota-titulo" class="nota-heading">Nota de esclarecimento</h2>'
+          new='<div class="brand-heading-accent">'+ICON_ROOT+old+'</div>'
+          s=once(s, old, new, 'home note megaphone')
+          s=once(s, '<footer class="lp-footer">\n    <div class="inner">', '<footer class="lp-footer">\n    <div class="inner">\n      '+FOOT_ROOT, 'home footer')
+          save(p,s)
+
+          # Por que Lula: assinatura de mobilização somente no hero.
+          p='apoio-lula/index.html'; s=load(p)
+          s=once(s, '<link rel="stylesheet" href="../assets/styles.css">', '<link rel="stylesheet" href="../assets/styles.css">\n<link rel="stylesheet" href="../assets/brand.css">', 'apoio css')
+          s=once(s, '<header class="hero"><div>', '<header class="hero"><div>'+MEGA_SUB, 'apoio hero')
+          save(p,s)
+
+          # Fundamentos: assinatura editorial no cabeçalho e rodapé.
+          p='fundamentos/index.html'; s=load(p)
+          s=once(s, '<link rel="stylesheet" href="../assets/styles.css">', '<link rel="stylesheet" href="../assets/styles.css">\n<link rel="stylesheet" href="../assets/brand.css">', 'fundamentos css')
+          s=once(s, '<header class="report-head">', '<header class="report-head">'+BRUSH_SUB, 'fundamentos hero')
+          s=once(s, '<footer class="foot">', '<footer class="foot">'+FOOT_SUB, 'fundamentos footer')
+          save(p,s)
+
+          # Candidaturas: assinatura editorial no hero e no rodapé; nada nas fichas/filtros.
+          p='candidaturas/index.html'; s=load(p)
+          s=once(s, '</head>', '<link rel="stylesheet" href="../assets/brand.css">\n</head>', 'candidaturas css')
+          marker='<section class="hero"><div class="wrap hero-inner"><div>'
+          s=once(s, marker, marker+BRUSH_SUB, 'candidaturas hero')
+          s=once(s, '<footer><div class="wrap tail">', '<footer><div class="wrap tail">'+FOOT_SUB, 'candidaturas footer')
+          save(p,s)
+          PY
+      - name: Brand regression QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          files = {p: Path(p).read_text(encoding='utf-8') for p in ['index.html','apoio-lula/index.html','fundamentos/index.html','candidaturas/index.html']}
+          checks = []
+          def expect(cond, msg):
+              if not cond: raise SystemExit('QA FAIL: '+msg)
+              checks.append(msg)
+
+          expect('assets/brand.css' in files['index.html'], 'Home carrega brand.css')
+          for p in ['apoio-lula/index.html','fundamentos/index.html','candidaturas/index.html']:
+              expect('../assets/brand.css' in files[p], f'{p} carrega brand.css')
+          expect(files['index.html'].count('brand-signature--brush') == 2, 'Home tem 2 assinaturas de pincelada')
+          expect(files['index.html'].count('brand-icon--megaphone') == 1, 'Home tem 1 megafone isolado')
+          expect(files['index.html'].count('brand-signature--megaphone') == 0, 'Home não usa lockup de megafone')
+          expect(files['apoio-lula/index.html'].count('brand-signature--megaphone') == 1, 'Por que Lula tem 1 lockup de megafone')
+          expect(files['apoio-lula/index.html'].count('brand-icon--megaphone') == 0, 'Por que Lula não repete megafone isolado')
+          expect(files['fundamentos/index.html'].count('brand-signature--brush') == 2, 'Fundamentos tem hero + rodapé com pincelada')
+          expect(files['candidaturas/index.html'].count('brand-signature--brush') == 2, 'Candidaturas tem hero + rodapé com pincelada')
+          expect(files['candidaturas/index.html'].count('brand-icon--megaphone') == 0, 'Candidaturas não usa megafone nas fichas')
+          expect('brand-signature' not in files['candidaturas/index.html'].split('<main class="wrap" id="conteudo">',1)[1].split('</main>',1)[0], 'Candidaturas não põe assinatura dentro do painel')
+          for a in ['assets/lettering_chama_atps.svg','assets/megafone_mao.svg','assets/pincelada_azul_preset.svg','assets/brand.css']:
+              expect(Path(a).exists(), f'{a} existe')
+          print('QA PASS —', len(checks), 'checks')
+          PY
+          sha256sum assets/lettering_chama_atps.svg assets/megafone_mao.svg assets/pincelada_azul_preset.svg
+      - name: Commit implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/brand.css assets/lettering_chama_atps.svg assets/megafone_mao.svg assets/pincelada_azul_preset.svg index.html apoio-lula/index.html fundamentos/index.html candidaturas/index.html
+          git commit -m 'Add canonical brand signatures to microsite'
+          git push
