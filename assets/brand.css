@@ -20,11 +20,18 @@
 .brand-heading-accent{display:flex;align-items:center;gap:.75rem}
 .brand-heading-accent>:last-child{margin:0}
 
-/* Topos: assinatura completa, com megafone, também nas páginas que antes usavam apenas a pincelada. */
-.brand-signature--brush.brand-signature--hero{width:clamp(160px,19vw,215px);aspect-ratio:273/132}
-.brand-signature--brush.brand-signature--hero .brand-brush-crop{width:80.586%;left:0;top:25.76%;aspect-ratio:889/362}
-.brand-signature--brush.brand-signature--hero .brand-lettering{width:58%;height:auto;left:8%;top:28%}
-.brand-signature--brush.brand-signature--hero::after{content:"";position:absolute;z-index:3;width:43.516%;left:56.41%;top:5.3%;aspect-ratio:484/257;background:url("megafone_mao.svg") 45.97% 47.76%/223.1405% auto no-repeat}
+/* Topos: usar a assinatura pronta aprovada como um único asset, sem reconstrução em CSS. */
+.brand-signature--hero{
+  width:clamp(200px,22vw,260px)!important;
+  aspect-ratio:720/355!important;
+  margin:0 0 1rem;
+  background:url("assinatura_topo_chama_atps.webp") left center/contain no-repeat;
+  overflow:visible;
+}
+.brand-signature--hero .brand-brush-crop,
+.brand-signature--hero .brand-lettering,
+.brand-signature--hero .brand-megaphone-crop{display:none!important}
+.brand-signature--hero::after{content:none!important}
 
 /* Rodapés: selo reto aprovado — lettering 55% x 75,5% da área visível da pincelada. */
 .brand-signature--footer{aspect-ratio:889/362}
@@ -35,5 +42,12 @@ footer.foot:not(:has(.brand-signature--footer))::before{content:"";display:block
 /* Nota de esclarecimento: o megafone fala para o título; os raios apontam para “Nota”. */
 .brand-heading-accent .brand-icon--megaphone{transform:scaleX(-1)}
 
-@media(max-width:620px){.brand-signature--brush{width:clamp(145px,43vw,170px)}.brand-signature--megaphone{width:clamp(150px,48vw,180px)}.brand-signature--brush.brand-signature--hero{width:clamp(150px,48vw,180px)}.brand-signature--small{width:108px}.brand-signature--hero{margin-bottom:.8rem}.brand-heading-accent{gap:.6rem}footer.foot:not(:has(.brand-signature--footer))::before{width:108px}}
+@media(max-width:620px){
+  .brand-signature--brush{width:clamp(145px,43vw,170px)}
+  .brand-signature--megaphone{width:clamp(150px,48vw,180px)}
+  .brand-signature--hero{width:clamp(190px,55vw,220px)!important;margin-bottom:.8rem}
+  .brand-signature--small{width:108px}
+  .brand-heading-accent{gap:.6rem}
+  footer.foot:not(:has(.brand-signature--footer))::before{width:108px}
+}
 @media print{.brand-signature,.brand-icon{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
