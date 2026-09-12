@@ -13,7 +13,6 @@
 .brand-signature--megaphone .brand-megaphone-crop{width:43.516%;left:56.41%;top:5.3%;aspect-ratio:484/257;z-index:3}
 .brand-signature--hero{margin:0 0 1rem}
 .brand-signature--small{width:clamp(108px,12vw,138px)}
-.brand-signature--footer{margin:0 0 .85rem}
 .brand-icon{position:relative;display:inline-block;flex:0 0 auto;vertical-align:middle;line-height:0}
 .brand-icon--megaphone{width:clamp(30px,3.2vw,36px);aspect-ratio:484/257}
 .brand-icon--megaphone .brand-megaphone-crop{inset:0}
@@ -33,10 +32,13 @@
 .brand-signature--hero .brand-megaphone-crop{display:none!important}
 .brand-signature--hero::after{content:none!important}
 
-/* Rodapés: usar o selo reto aprovado como asset único, sem reconstrução em CSS. */
+/* Rodapés: selo reto aprovado como asset único, sem reconstrução em CSS. */
 .brand-signature--footer{
-  aspect-ratio:500/226;
+  width:clamp(108px,12vw,138px)!important;
+  aspect-ratio:500/226!important;
+  margin:0 0 .85rem;
   background:url("selo_rodape_chama_atps.webp") center/contain no-repeat;
+  background-color:transparent;
   overflow:visible;
 }
 .brand-signature--footer .brand-brush-crop,
@@ -59,6 +61,7 @@ footer.foot:not(:has(.brand-signature--footer))::before{
   .brand-signature--megaphone{width:clamp(150px,48vw,180px)}
   .brand-signature--hero{width:clamp(170px,52vw,200px)!important;margin-bottom:.8rem}
   .brand-signature--small{width:108px}
+  .brand-signature--footer{width:108px!important}
   .brand-heading-accent{gap:.6rem}
   footer.foot:not(:has(.brand-signature--footer))::before{width:108px}
 }
