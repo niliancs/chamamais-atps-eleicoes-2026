@@ -19,6 +19,7 @@ jobs:
           npx playwright install --with-deps chromium >/dev/null 2>&1
       - name: Run final UX, usability, UI and journey QA
         run: |
+          set -o pipefail
           mkdir -p qa-final
           cat > qa-final.mjs <<'EOF'
           import { chromium } from 'playwright';
@@ -42,7 +43,8 @@ jobs:
 
           for(const [vpName,viewport] of Object.entries(viewports)){
             for(const p of pages){
-              const page=await browser.newPage({viewport});
+              const context=await browser.newContext({viewport});
+              const page=await context.newPage();
               const errors=[]; const consoleErrors=[];
               page.on('pageerror',e=>errors.push(String(e)));
               page.on('console',m=>{if(m.type()==='error') consoleErrors.push(m.text())});
@@ -71,8 +73,6 @@ jobs:
                   headings,
                   ariaCurrent:[...document.querySelectorAll('[aria-current]')].map(e=>({tag:e.tagName.toLowerCase(),value:e.getAttribute('aria-current'),text:e.textContent.trim().replace(/\s+/g,' ').slice(0,100)})),
                   horizontalOverflow:Math.max(0,document.documentElement.scrollWidth-window.innerWidth),
-                  bodyScrollWidth:document.documentElement.scrollWidth,
-                  viewportWidth:window.innerWidth,
                   hero:{exists:!!hero,bg:hero?getComputedStyle(hero).backgroundImage:null,rightGap:heroRect&&parentRect?Math.round(parentRect.right-heroRect.right):null},
                   footer:{exists:!!footer||!!foot,bg:footerBg},
                   interactiveCount:interactives.length,
@@ -83,29 +83,30 @@ jobs:
                   internal:[...new Set(internal)]
                 };
               });
-              const levels=data.headings.map(h=>h.level);
-              data.headingSkips=headingSkips(levels);
+              data.headingSkips=headingSkips(data.headings.map(h=>h.level));
               const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
               data.axe={violations:axe.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.length,targets:v.nodes.slice(0,6).map(n=>n.target)})),count:axe.violations.length};
               data.errors=errors; data.consoleErrors=consoleErrors;
               report.pages[key]={status:resp?.status(),...data};
               await page.screenshot({path:`qa-final/${key}-full.png`,fullPage:true});
               await page.screenshot({path:`qa-final/${key}-viewport.png`});
-              await page.close();
+              await context.close();
             }
           }
 
           const allInternal=new Set();
           for(const p of Object.values(report.pages)) for(const h of p.internal||[]) allInternal.add(h.split('#')[0]);
-          const request=await browser.newPage();
+          const reqContext=await browser.newContext();
+          const reqPage=await reqContext.newPage();
           for(const url of [...allInternal]){
             if(!url) continue;
-            try{ const r=await request.request.get(url,{timeout:30000}); report.internalLinks[url]=r.status(); }
+            try{ const r=await reqPage.request.get(url,{timeout:30000}); report.internalLinks[url]=r.status(); }
             catch(e){ report.internalLinks[url]=`ERR ${String(e)}`; }
           }
-          await request.close();
+          await reqContext.close();
 
-          const journeyPage=await browser.newPage({viewport:viewports.mobile});
+          const journeyContext=await browser.newContext({viewport:viewports.mobile});
+          const journeyPage=await journeyContext.newPage();
           await journeyPage.goto(base,{waitUntil:'networkidle'});
           const steps=[];
           for(const label of ['Por que Lula','Fundamentos','Candidaturas']){
@@ -113,8 +114,7 @@ jobs:
             const exists=await link.count()>0;
             if(!exists){steps.push({label,ok:false,reason:'link not found'});continue;}
             await link.click(); await journeyPage.waitForLoadState('networkidle');
-            const landed=journeyPage.url();
-            steps.push({label,ok:true,landed});
+            steps.push({label,ok:true,landed:journeyPage.url()});
             const home=journeyPage.locator('a.nav-home').first();
             if(await home.count()){await home.click();await journeyPage.waitForLoadState('networkidle');}
             else {await journeyPage.goto(base,{waitUntil:'networkidle'});}
@@ -125,10 +125,10 @@ jobs:
           const focusTrail=[];
           for(let i=0;i<14;i++){
             await journeyPage.keyboard.press('Tab');
-            focusTrail.push(await journeyPage.evaluate(()=>{const a=document.activeElement; if(!a) return null; const r=a.getBoundingClientRect(); const s=getComputedStyle(a); return {tag:a.tagName.toLowerCase(),text:(a.innerText||a.getAttribute('aria-label')||'').trim().replace(/\s+/g,' ').slice(0,90),href:a.getAttribute('href'),outline:s.outlineStyle,outlineWidth:s.outlineWidth,visible:r.width>0&&r.height>0};}));
+            focusTrail.push(await journeyPage.evaluate(()=>{const a=document.activeElement;if(!a)return null;const r=a.getBoundingClientRect();const s=getComputedStyle(a);return{tag:a.tagName.toLowerCase(),text:(a.innerText||a.getAttribute('aria-label')||'').trim().replace(/\s+/g,' ').slice(0,90),href:a.getAttribute('href'),outline:s.outlineStyle,outlineWidth:s.outlineWidth,visible:r.width>0&&r.height>0}}));
           }
           report.journeys.keyboardFocusTrail=focusTrail;
-          await journeyPage.close();
+          await journeyContext.close();
 
           fs.writeFileSync('qa-final/report.json',JSON.stringify(report,null,2));
           const issues=[];
