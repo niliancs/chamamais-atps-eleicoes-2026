@@ -1,4 +1,4 @@
-# rerun after fixing footer asset transparency
+# rerun after cache-busting footer asset filename
 name: Production footer QA
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
             await page.close();
           }
           const assetPage=await browser.newPage({viewport:{width:1200,height:700}});
-          await assetPage.goto(base+'/assets/selo_rodape_chama_atps.webp',{waitUntil:'networkidle',timeout:60000});
+          await assetPage.goto(base+'/assets/selo_rodape_chama_atps_v2.webp',{waitUntil:'networkidle',timeout:60000});
           const assetData=await assetPage.evaluate(()=>{
             const img=document.querySelector('img');
             if(!img) return {img:false};
