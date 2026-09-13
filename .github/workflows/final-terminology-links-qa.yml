@@ -82,7 +82,7 @@ jobs:
           from pathlib import Path
           from html.parser import HTMLParser
           from urllib.parse import urlsplit, unquote
-          import re, sys
+          import sys
 
           pages = {
               'index.html': 'https://chamamais-atps-eleicoes-2026.vercel.app/',
@@ -91,7 +91,6 @@ jobs:
               'candidaturas/index.html': 'https://chamamais-atps-eleicoes-2026.vercel.app/candidaturas/',
           }
           errors = []
-          warnings = []
 
           class P(HTMLParser):
               def __init__(self):
@@ -113,7 +112,7 @@ jobs:
                   errors.append(f'{page}: canonical inesperada: {parser.canon}')
 
           # Resolve links internos e âncoras.
-          for page, parser in parsed.items():
+          for page, parser in list(parsed.items()):
               base=Path(page).parent
               for tag,key,raw,attrs in parser.links:
                   if raw.startswith(('#','mailto:','tel:','javascript:','data:','blob:')):
@@ -136,9 +135,6 @@ jobs:
                       target=(base/path)
                   if str(target).endswith('/') or target.is_dir():
                       target=target/'index.html'
-                  # Normaliza .. sem exigir resolve absoluto.
-                  target=Path(*[x for x in target.parts if x != '.'])
-                  # pathlib não elimina .. lexicalmente; usa resolve sobre workspace.
                   full=target.resolve()
                   root=Path('.').resolve()
                   try:
@@ -171,11 +167,16 @@ jobs:
               if 'dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a' not in s:
                   errors.append(f'{page}: sem link para pacote de propostas do TSE')
 
-          # Terminologia pública que não deve reaparecer.
-          idx=landing
-          if 'cadastro reserva' in idx.lower():
-              errors.append('index.html: ainda há “cadastro reserva” sem preposição')
-          if 'Andeps' in idx:
+          # Terminologia pública que não deve reaparecer. Nomes próprios são permitidos.
+          idx_check=landing.lower()
+          for proper in [
+              'comissão do cadastro reserva de atps do cpnu 1',
+              'movimento do cadastro reserva de atps do cpnu 1',
+          ]:
+              idx_check=idx_check.replace(proper, '')
+          if 'cadastro reserva' in idx_check:
+              errors.append('index.html: ainda há uso genérico de “cadastro reserva” sem preposição')
+          if 'Andeps' in landing:
               errors.append('index.html: ainda há “Andeps”; usar ANDEPS')
           for page in ['apoio-lula/index.html','fundamentos/index.html']:
               s=Path(page).read_text(encoding='utf-8')
