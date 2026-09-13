@@ -1,0 +1,128 @@
+name: Aplicar QA editorial
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-editorial-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Atualizar páginas
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          def replace_once(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f'Padrão não encontrado: {label}')
+              return text.replace(old, new, 1)
+
+          # LANDING
+          p = 'index.html'
+          s = read(p)
+          s = replace_once(
+              s,
+              '        após análise dos planos de governo dos dois candidatos mais bem colocados no cenário eleitoral\n        consultado, manifestar apoio público à candidatura de Lula à Presidência da República e divulgar',
+              '        após análise dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário\n        eleitoral considerado pela Comissão, manifestar apoio público à candidatura de Lula à Presidência da República e divulgar',
+              'abertura da nota'
+          )
+          s = replace_once(
+              s,
+              'Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade da decisão da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva.',
+              'Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade do posicionamento da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o Cadastro Reserva.',
+              'legitimidade da consulta'
+          )
+          s = replace_once(
+              s,
+              '<p>O posicionamento é da Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do movimento #ChamaMaisATPS. A consulta posterior reforça sua legitimidade entre as pessoas que participaram, mas não transforma essa posição em manifestação institucional de todo o Cadastro Reserva, de toda a carreira de ATPS, do MGI ou da Andeps, nem substitui as escolhas políticas individuais de seus integrantes.</p>\n            <p>Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas e não pressupõem unanimidade nem representatividade estatística de todo o Cadastro Reserva.</p>',
+              '<p>O posicionamento é da Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do movimento #ChamaMaisATPS. A consulta posterior reforça sua legitimidade entre as pessoas que participaram, sem transformá-lo em manifestação institucional de todo o Cadastro Reserva, de toda a carreira de ATPS, do MGI ou da Andeps, nem substituir as escolhas políticas individuais de seus integrantes. Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas e não pressupõem unanimidade nem representatividade estatística de todo o Cadastro Reserva.</p>',
+              'representatividade'
+          )
+          s = replace_once(s, '<h3>Plano de Governo Lula 2026</h3>', '<h3>Programa de Governo — Lula · Eleições 2026</h3>', 'título plano Lula')
+          s = replace_once(s, '<h3>Plano de Governo Flávio Bolsonaro 2026</h3>', '<h3>Diretrizes do Plano de Governo 2027–2030 — Flávio Bolsonaro</h3>', 'título plano Flávio')
+          if s.count('<p class="doc-meta">PDF · fonte primária</p>') != 2:
+              raise SystemExit('Quantidade inesperada de metadados dos planos')
+          s = s.replace('<p class="doc-meta">PDF · fonte primária</p>', '<p class="doc-meta">PDF para consulta · documento da candidatura · origem: TSE Dados Abertos</p>')
+          s = replace_once(
+              s,
+              'Versão pública atualizada em 12/09/2026 · Conteúdo sujeito a atualização quando houver nova evidência documentada.',
+              'Última atualização: 13/09/2026 · Conteúdo sujeito a atualização quando houver nova evidência documentada.',
+              'data de atualização'
+          )
+          write(p, s)
+
+          # POR QUE LULA
+          p = 'apoio-lula/index.html'
+          s = read(p)
+          s = replace_once(s, 'Bolsa Família retomado com piso de R$ 600', 'O Bolsa Família foi retomado com piso de R$ 600', 'gramática Bolsa Família')
+          s = replace_once(s, 'Defendemos capacidade técnica, continuidade dos serviços e controle público sobre suas prioridades.', 'Defendemos capacidade técnica, continuidade dos serviços e controle público sobre as prioridades do Estado.', 'microcopy Estado')
+          old = '</table></div><span class="refs"><a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a" target="_blank" rel="noopener noreferrer">TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)</a></span>'
+          new = '</table></div><span class="refs"><a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a" target="_blank" rel="noopener noreferrer">TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)</a> · <a href="https://drive.google.com/file/d/1ruX45Z09uhSPNebIKXBvZ5qLYfPJKNKO/view" target="_blank" rel="noopener noreferrer">Abrir PDF utilizado nesta análise — Lula</a> · <a href="https://drive.google.com/file/d/12qZqODh8K7D4fxEDQ0zt2F8Hby7-0Prv/view" target="_blank" rel="noopener noreferrer">Abrir PDF utilizado nesta análise — Flávio Bolsonaro</a></span>'
+          s = replace_once(s, old, new, 'links diretos dos planos no infográfico')
+          write(p, s)
+
+          # FUNDAMENTOS
+          p = 'fundamentos/index.html'
+          s = read(p)
+          old = '<p>A Comissão do Cadastro Reserva de ATPS do CPNU 1 deliberou o apoio público à candidatura de Lula em 09/09/2026. Depois da deliberação, o posicionamento foi submetido a consulta voluntária de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva.</p><p><strong>95,1% dos participantes foram favoráveis</strong> ao apoio público a Lula. Em consulta separada, <strong>90,3% dos participantes foram favoráveis</strong> à divulgação de candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis.</p>'
+          new = '<p>A Comissão do Cadastro Reserva de ATPS do CPNU 1 deliberou o apoio público à candidatura de Lula em 09/09/2026. Depois da deliberação, foram realizadas duas consultas voluntárias de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no Cadastro Reserva: uma sobre o apoio público a Lula e outra sobre a divulgação de candidaturas parlamentares segundo critérios públicos e verificáveis.</p><p>Na primeira consulta, <strong>95,1% dos participantes foram favoráveis</strong> ao apoio público a Lula. Na segunda, <strong>90,3% dos participantes foram favoráveis</strong> à divulgação de candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis.</p>'
+          s = replace_once(s, old, new, 'governança das duas consultas')
+          s = replace_once(s, 'Bolsa Família retomado com piso de R$ 600', 'O Bolsa Família foi retomado com piso de R$ 600', 'gramática Bolsa Família no dossiê')
+          old = '</table></div><span class="refs"><a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a" target="_blank" rel="noopener noreferrer">TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)</a></span>'
+          new = '</table></div><span class="refs"><a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a" target="_blank" rel="noopener noreferrer">TSE — pacote oficial de propostas presidenciais 2026 (contém os PDFs auditados de Lula e Flávio Bolsonaro)</a> · <a href="https://drive.google.com/file/d/1ruX45Z09uhSPNebIKXBvZ5qLYfPJKNKO/view" target="_blank" rel="noopener noreferrer">Abrir PDF utilizado nesta análise — Lula</a> · <a href="https://drive.google.com/file/d/12qZqODh8K7D4fxEDQ0zt2F8Hby7-0Prv/view" target="_blank" rel="noopener noreferrer">Abrir PDF utilizado nesta análise — Flávio Bolsonaro</a></span>'
+          s = replace_once(s, old, new, 'links diretos dos planos no dossiê')
+          write(p, s)
+
+          # CANDIDATURAS — manter o recorte editorial existente; corrigir apenas a descrição do CR.
+          p = 'candidaturas/index.html'
+          s = read(p)
+          s = replace_once(
+              s,
+              'O cadastro de reserva reúne pessoas aprovadas que aguardam convocação.',
+              'O cadastro de reserva reúne pessoas aprovadas e classificadas que ainda não foram convocadas.',
+              'descrição do cadastro de reserva'
+          )
+          write(p, s)
+          PY
+
+      - name: Conferir alterações
+        shell: bash
+        run: |
+          set -e
+          grep -q 'planos de governo de Lula e Flávio Bolsonaro' index.html
+          grep -q 'legitimidade do posicionamento da Comissão' index.html
+          grep -q 'Programa de Governo — Lula · Eleições 2026' index.html
+          grep -q 'Diretrizes do Plano de Governo 2027–2030 — Flávio Bolsonaro' index.html
+          grep -q 'Última atualização: 13/09/2026' index.html
+          grep -q 'foram realizadas duas consultas voluntárias' fundamentos/index.html
+          grep -q 'controle público sobre as prioridades do Estado' apoio-lula/index.html
+          grep -q 'pessoas aprovadas e classificadas que ainda não foram convocadas' candidaturas/index.html
+          grep -q 'candidaturas de esquerda e centro-esquerda' candidaturas/index.html
+
+      - name: Commitar e remover workflow temporário
+        shell: bash
+        run: |
+          rm .github/workflows/apply-editorial-qa.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html apoio-lula/index.html fundamentos/index.html candidaturas/index.html .github/workflows/apply-editorial-qa.yml
+          git commit -m 'Ajusta QA editorial do microsite'
+          git push
