@@ -1,0 +1,160 @@
+name: Final terminology and links QA v2
+on:
+  push:
+    paths:
+      - '.github/workflows/final-terminology-links-qa-v2.yml'
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Padronizar terminologia
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def repl(path, pairs):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              for a,b in pairs: s=s.replace(a,b)
+              p.write_text(s, encoding='utf-8')
+
+          repl('index.html', [
+            ('pessoas que permanecem no Cadastro Reserva','pessoas que permanecem no cadastro de reserva'),
+            ('todo o Cadastro Reserva','todo o cadastro de reserva'),
+            ('integrantes do Cadastro Reserva','integrantes do cadastro de reserva'),
+            ('do MGI ou da Andeps','do MGI ou da ANDEPS'),
+            ('ao cadastro reserva','ao cadastro de reserva'),
+            ('Expectativas do cadastro reserva','Expectativas do cadastro de reserva'),
+            ('cadastro reserva','cadastro de reserva'),
+            ('Comissão do Cadastro Reserva de ATPS — CPNU 1','Comissão do Cadastro Reserva de ATPS do CPNU 1'),
+          ])
+
+          repl('apoio-lula/index.html', [
+            ('Atualização: 10 de setembro de 2026','Corte factual: 10 de setembro de 2026'),
+            ('pessoas que permanecem no Cadastro Reserva','pessoas que permanecem no cadastro de reserva'),
+            ('todo o Cadastro Reserva','todo o cadastro de reserva'),
+            ('reforça a legitimidade da decisão da Comissão','reforça a legitimidade do posicionamento da Comissão'),
+            ('O CNU, instituído','O CPNU, instituído'),
+            ('CNU não garante','CPNU não garante'),
+            ('>CNU · Fonte primária<','>CPNU · Fonte primária<'),
+            ('ATPS e CNU','ATPS e CPNU'),
+          ])
+
+          repl('fundamentos/index.html', [
+            ('pessoas que permanecem no Cadastro Reserva','pessoas que permanecem no cadastro de reserva'),
+            ('todo o Cadastro Reserva','todo o cadastro de reserva'),
+            ('O CNU, instituído','O CPNU, instituído'),
+            ('CNU não garante','CPNU não garante'),
+            ('“CNU”','“CPNU”'),
+            ('ATPS e CNU','ATPS e CPNU'),
+            ('>CNU · Fonte primária<','>CPNU · Fonte primária<'),
+            ('Bolsa Família retomado em lei, com piso e adicionais conforme composição familiar.','O Bolsa Família foi retomado em lei, com piso e adicionais conforme composição familiar.'),
+          ])
+
+          p=Path('candidaturas/index.html'); s=p.read_text(encoding='utf-8')
+          marker='<script id="dataset" type="application/json">'
+          public,data=s.split(marker,1)
+          public=public.replace('ATPS / CR / CNU','ATPS / CR / CPNU')
+          public=public.replace('Concurso Público Nacional Unificado, também referido como CPNU.','Concurso Público Nacional Unificado (CPNU).')
+          data=data.replace('"cnu":"CNU e outros cadastros"','"cnu":"CPNU e outros cadastros"')
+          data=data.replace('"escopo":"CNU / concursos"','"escopo":"CPNU / concursos"')
+          data=data.replace('"escopo":"CNU / outras carreiras"','"escopo":"CPNU / outras carreiras"')
+          p.write_text(public+marker+data,encoding='utf-8')
+          PY
+      - name: QA de links e consistência
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit, unquote
+          import sys
+
+          pages={
+            'index.html':'https://chamamais-atps-eleicoes-2026.vercel.app/',
+            'apoio-lula/index.html':'https://chamamais-atps-eleicoes-2026.vercel.app/apoio-lula/',
+            'fundamentos/index.html':'https://chamamais-atps-eleicoes-2026.vercel.app/fundamentos/',
+            'candidaturas/index.html':'https://chamamais-atps-eleicoes-2026.vercel.app/candidaturas/',
+          }
+          errors=[]
+          class Parser(HTMLParser):
+            def __init__(self):
+              super().__init__(); self.ids=set(); self.refs=[]; self.canon=[]
+            def handle_starttag(self,tag,attrs):
+              d=dict(attrs)
+              if d.get('id'): self.ids.add(d['id'])
+              if tag=='a' and d.get('name'): self.ids.add(d['name'])
+              if tag=='link' and d.get('rel')=='canonical' and d.get('href'): self.canon.append(d['href'])
+              for k in ('href','src'):
+                if d.get(k): self.refs.append((tag,k,d[k],d))
+
+          parsed={}
+          for page,canonical in pages.items():
+            q=Parser(); q.feed(Path(page).read_text(encoding='utf-8')); parsed[page]=q
+            if q.canon != [canonical]: errors.append(f'{page}: canonical incorreta {q.canon}')
+
+          root=Path('.').resolve()
+          for page,q in list(parsed.items()):
+            base=Path(page).parent
+            for tag,key,raw,attrs in q.refs:
+              if raw.startswith('#'):
+                if raw[1:] and raw[1:] not in q.ids: errors.append(f'{page}: âncora ausente {raw}')
+                continue
+              if raw.startswith(('mailto:','tel:','javascript:','data:','blob:')): continue
+              u=urlsplit(raw)
+              if u.scheme in ('http','https') or u.netloc:
+                if attrs.get('target')=='_blank':
+                  rel=set((attrs.get('rel') or '').split())
+                  if not {'noopener','noreferrer'}.issubset(rel): errors.append(f'{page}: _blank sem rel seguro: {raw}')
+                continue
+              path=unquote(u.path)
+              target=Path(page) if not path else (Path(path.lstrip('/')) if path.startswith('/') else base/path)
+              if str(target).endswith('/') or target.is_dir(): target=target/'index.html'
+              full=target.resolve()
+              try: rel=full.relative_to(root)
+              except ValueError:
+                errors.append(f'{page}: link fora do repo {raw}'); continue
+              if not full.exists(): errors.append(f'{page}: link interno quebrado {raw} -> {rel}'); continue
+              if u.fragment and full.suffix.lower()=='.html':
+                keyp=str(rel).replace('\\','/')
+                if keyp not in parsed:
+                  z=Parser(); z.feed(full.read_text(encoding='utf-8')); parsed[keyp]=z
+                if u.fragment not in parsed[keyp].ids: errors.append(f'{page}: âncora {u.fragment} ausente em {keyp}')
+
+          landing=Path('index.html').read_text(encoding='utf-8')
+          for url in [
+            'https://drive.google.com/file/d/1ruX45Z09uhSPNebIKXBvZ5qLYfPJKNKO/view',
+            'https://drive.google.com/file/d/12qZqODh8K7D4fxEDQ0zt2F8Hby7-0Prv/view',
+          ]:
+            if url not in landing: errors.append('PDF crítico ausente da landing: '+url)
+
+          for page in ('apoio-lula/index.html','fundamentos/index.html'):
+            txt=Path(page).read_text(encoding='utf-8')
+            if 'dadosabertos.tse.jus.br/dataset/candidatos-2026' not in txt: errors.append(f'{page}: base TSE ausente')
+            if 'dadosabertos.tse.jus.br/dataset/candidatos-2026/resource/433ac1f4-07dc-44a2-bcbe-c87a2073721a' not in txt: errors.append(f'{page}: pacote de propostas TSE ausente')
+            if 'pessoas que permanecem no Cadastro Reserva' in txt or 'todo o Cadastro Reserva' in txt: errors.append(f'{page}: Cadastro Reserva genérico não padronizado')
+
+          clean=landing.lower()
+          for proper in ('comissão do cadastro reserva de atps do cpnu 1','movimento do cadastro reserva de atps do cpnu 1'):
+            clean=clean.replace(proper,'')
+          if 'cadastro reserva' in clean: errors.append('landing: cadastro reserva genérico sem “de”')
+          if 'Andeps' in landing: errors.append('landing: Andeps não padronizado')
+          cand=Path('candidaturas/index.html').read_text(encoding='utf-8').split('<script id="dataset"',1)[0]
+          if 'ATPS / CR / CNU' in cand: errors.append('candidaturas: CNU ainda visível na legenda')
+
+          if errors:
+            print('\n'.join('ERRO: '+e for e in errors)); sys.exit(1)
+          print('QA OK — canonical, navegação interna, âncoras, rel de links externos e terminologia pública.')
+          PY
+      - name: Commit final e limpeza
+        run: |
+          rm -f .github/workflows/final-terminology-links-qa.yml
+          rm -f .github/workflows/final-terminology-links-qa-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html apoio-lula/index.html fundamentos/index.html candidaturas/index.html .github/workflows
+          git commit -m "Padroniza terminologia e valida links do microsite"
+          git push
