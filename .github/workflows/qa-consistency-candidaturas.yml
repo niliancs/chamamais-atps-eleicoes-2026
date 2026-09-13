@@ -1,0 +1,89 @@
+name: QA consistency candidaturas
+on:
+  push:
+    paths:
+      - '.github/workflows/qa-consistency-candidaturas.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ajustar copy e consistência
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('candidaturas/index.html')
+          s = path.read_text(encoding='utf-8')
+          marker = '<script id="dataset"'
+          if marker not in s:
+              raise SystemExit('dataset marker not found')
+          visible, rest = s.split(marker, 1)
+
+          # Remove rótulos ideológicos dos cabeçalhos das fichas e CSS não mais usado.
+          visible = visible.replace('.ideology{font-weight:500;margin-left:7px}', '')
+          visible = re.sub(r'<span class="ideology">[^<]*</span>', '', visible)
+
+          # Consulta: linguagem descritiva, sem atribuir função formal à enquete.
+          visible = visible.replace(
+              'A consulta autoriza a divulgação segundo critérios; não transforma este levantamento factual em lista automática de candidaturas apoiadas. A presença de um nome no painel continua não significando, por si só, endosso eleitoral.',
+              'A consulta registrou apoio majoritário à divulgação segundo critérios públicos e verificáveis; não transforma este levantamento factual em lista automática de candidaturas apoiadas. A presença de um nome no painel continua não significando, por si só, endosso eleitoral.'
+          )
+
+          # Atualização incorporada: retirar classificação ideológica da apresentação pública.
+          visible = visible.replace(
+              'Esta atualização incorpora a Emenda 48 ao PL 1466/2025 (EMP 48/2025), evidências adicionais da Câmara, correções de categoria em fichas já existentes e candidaturas novas de esquerda e centro-esquerda vinculadas por ato formal.',
+              'Esta atualização incorpora a Emenda 48 ao PL 1466/2025 (EMP 48/2025), evidências adicionais da Câmara, correções de categoria em fichas já existentes e novas candidaturas com vínculos documentais pertinentes aos critérios do levantamento.'
+          )
+
+          old_intro = '''<details><summary>Recorte político e critérios de inclusão</summary><p>O painel parte dos nomes pesquisados no histórico da pauta e reúne candidaturas com registros sobre ATPS, concursos, serviço público ou políticas públicas. O posicionamento político é uma <b>classificação analítica</b>, apoiada em programa partidário e trajetória, e não um campo oficial do TSE. Filiação partidária não comprova apoio a uma reivindicação.</p><p><b>Escopo do painel:</b> foco principal em Câmara dos Deputados e Senado Federal, com uma candidatura distrital incluída excepcionalmente: Raphael Sebba, pelo vínculo direto com a carreira de ATPS. Renato Roseno ocupa mandato estadual, mas disputa deputado federal e, por isso, integra o foco principal. As demais candidaturas estaduais permanecem registradas apenas na documentação de apoio do levantamento e na tabela abaixo.</p><p>O recorte político reúne candidaturas classificadas analiticamente como esquerda ou centro-esquerda. A classificação considera filiação e federação no registro eleitoral, documentos programáticos partidários e trajetória pública documentada; não é um campo oficial do TSE e não transforma filiação partidária em prova de apoio à pauta. PT, PCdoB, PSOL, REDE, PDT, PSB e PV aparecem no recorte. Quando a posição individual exige contextualização, a ficha explicita a base da classificação. Carlos Minc, Raphael Sebba e Reginaldo Veras mantêm notas individuais por trajetória e propostas.</p><p><a href="https://pt.org.br/manifesto-de-fundacao-do-partido-dos-trabalhadores/" rel="noopener noreferrer" target="_blank">Manifesto do PT ↗</a> · <a href="https://psol50.org.br/partido/programa/" rel="noopener noreferrer" target="_blank">Programa do PSOL ↗</a> · <a href="https://www.alerj.rj.gov.br/Deputados/PerfilDeputado/310?Legislatura=20" rel="noopener noreferrer" target="_blank">Biografia de Carlos Minc ↗</a> · <a href="https://pv.org.br/" rel="noopener noreferrer" target="_blank">Partido Verde ↗</a> · <a href="https://jornaldoguara.com.br/2026/09/09/raphael-sebba-defende-planejamento-urbano-para-o-df/" rel="noopener noreferrer" target="_blank">Propostas de Raphael Sebba ↗</a></p><h3>Registros preservados fora deste recorte</h3>'''
+          new_intro = '''<details><summary>Critérios de inclusão e limites do levantamento</summary><p>O painel parte dos nomes pesquisados no histórico da pauta e reúne candidaturas com registros documentais relacionados a ATPS, cadastro de reserva, CPNU, serviço público ou políticas públicas. Filiação partidária, presença no painel ou participação em um ato coletivo não comprovam, por si só, apoio a uma reivindicação específica.</p><p><b>Escopo do painel:</b> foco principal em Câmara dos Deputados e Senado Federal, com uma candidatura distrital incluída excepcionalmente: Raphael Sebba, pelo vínculo direto com a carreira de ATPS. Renato Roseno ocupa mandato estadual, mas disputa deputado federal e, por isso, integra o foco principal. As demais candidaturas estaduais permanecem registradas na documentação de apoio e na tabela abaixo.</p><h3>Registros complementares fora da seleção principal</h3>'''
+          if old_intro not in visible:
+              raise SystemExit('criteria intro not found')
+          visible = visible.replace(old_intro, new_intro)
+
+          visible = visible.replace(
+              'PSDB. Tem registro histórico de apoio, mas está fora do recorte político de esquerda.',
+              'Tem registro histórico de apoio e foi preservado como registro complementar do levantamento.'
+          )
+
+          # Remover notas individuais de classificação ideológica ainda visíveis nas fichas.
+          visible = re.sub(
+              r'<p class="small">[^<]*(?:classificação analítica|Classificação analítica|Inferência analítica)[^<]*</p>',
+              '', visible
+          )
+
+          visible = visible.replace(
+              '<p><b>Atualização de 11/09/2026.</b> O painel reúne 69 candidaturas e incorporou novas evidências legislativas, correções de categoria e candidaturas pertinentes de esquerda e centro-esquerda. A exibição das fichas, a busca, os filtros e as contagens foram revalidados.</p>',
+              '<p><b>Atualização editorial de 13/09/2026.</b> O painel reúne 69 candidaturas e incorporou novas evidências legislativas, correções de categoria e candidaturas pertinentes aos critérios documentais do levantamento. A exibição das fichas, a busca, os filtros e as contagens foram revalidados.</p>'
+          )
+
+          visible = visible.replace(
+              'Corte factual: 10/09/2026 · atualização: 11/09/2026.',
+              'Corte factual: 10/09/2026 · atualização editorial: 13/09/2026.'
+          )
+
+          # QA da camada pública: nenhum rótulo ideológico deve permanecer antes do dataset.
+          leftovers = [t for t in ['esquerda', 'Esquerda', 'centro-esquerda', 'Centro-esquerda', 'recorte político'] if t in visible]
+          if leftovers:
+              raise SystemExit(f'visible ideological labels remain: {leftovers}')
+          if 'A consulta autoriza a divulgação' in visible:
+              raise SystemExit('old consultation wording remains')
+          if 'atualização: 11/09/2026' in visible:
+              raise SystemExit('old footer date remains')
+          if '<span class="ideology">' in visible:
+              raise SystemExit('ideology spans remain')
+
+          path.write_text(visible + marker + rest, encoding='utf-8')
+          PY
+      - name: Remover workflow temporário e commitar
+        run: |
+          rm .github/workflows/qa-consistency-candidaturas.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add candidaturas/index.html .github/workflows/qa-consistency-candidaturas.yml
+          git commit -m "Limpa consistência editorial da página de candidaturas"
+          git push
