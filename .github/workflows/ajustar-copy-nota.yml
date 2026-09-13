@@ -1,0 +1,83 @@
+name: Ajustar copy da Nota de Esclarecimento
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ajustar-copy-nota.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Ajustar abertura e representatividade
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          old_opening = '''      <p class="nota-opening">
+        A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de
+        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, após análise comparativa
+        dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário eleitoral
+        consultado, em 9 de setembro de 2026, manifestar apoio público à candidatura de Lula à
+        Presidência da República. Em consulta posterior de 24 horas, realizada em 11 e 12 de setembro
+        de 2026 no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no
+        Cadastro Reserva, houve maioria favorável à divulgação de candidaturas parlamentares
+        selecionadas segundo critérios públicos e verificáveis.
+      </p>'''
+
+          new_opening = '''      <p class="nota-opening">
+        A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de
+        forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, em 9 de setembro de 2026,
+        após análise dos planos de governo dos dois candidatos mais bem colocados no cenário eleitoral
+        consultado, manifestar apoio público à candidatura de Lula à Presidência da República e divulgar
+        candidaturas parlamentares selecionadas a partir de critérios relacionados à defesa da democracia,
+        das políticas sociais, da capacidade do Estado, da valorização do serviço público federal e do
+        princípio do concurso público, previsto no art. 37, II, da Constituição Federal de 1988.
+        Em seguida, os dois pontos do posicionamento — o apoio público a Lula e a divulgação de candidaturas
+        parlamentares segundo critérios públicos e verificáveis — foram submetidos à consulta das pessoas
+        que permanecem no Cadastro Reserva, realizada em 11 e 12 de setembro de 2026 no grupo de WhatsApp
+        “Mobilização pelo CF3 – CR ATPS”. Entre os participantes, houve ampla maioria favorável a ambos.
+      </p>'''
+
+          old_rep = '''            <p>A decisão de manifestar apoio eleitoral foi deliberada pela Comissão do Cadastro Reserva de ATPS do CPNU 1 em 9 de setembro de 2026. Posteriormente, o posicionamento foi submetido a uma consulta de 24 horas no grupo “Mobilização pelo CF3 – CR ATPS”, composto por pessoas que permanecem no Cadastro Reserva. Entre as pessoas que participaram das consultas, houve maioria favorável ao apoio público a Lula e à divulgação de candidaturas parlamentares segundo critérios públicos e verificáveis.</p>
+            <p>A consulta reforça a legitimidade do posicionamento, mas não pressupõe unanimidade entre todas as pessoas integrantes do Cadastro Reserva, não substitui suas escolhas individuais e não deve ser interpretada como manifestação institucional de toda a carreira de ATPS, do MGI ou da Andeps.</p>'''
+
+          new_rep = '''            <p>O posicionamento é da Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do movimento #ChamaMaisATPS. A consulta posterior reforça sua legitimidade entre as pessoas que participaram, mas não transforma essa posição em manifestação institucional de todo o Cadastro Reserva, de toda a carreira de ATPS, do MGI ou da Andeps, nem substitui as escolhas políticas individuais de seus integrantes.</p>
+            <p>Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas e não pressupõem unanimidade nem representatividade estatística de todo o Cadastro Reserva.</p>'''
+
+          if old_opening not in text:
+              raise SystemExit('Bloco de abertura antigo não encontrado')
+          if old_rep not in text:
+              raise SystemExit('Bloco de representatividade antigo não encontrado')
+
+          text = text.replace(old_opening, new_opening, 1)
+          text = text.replace(old_rep, new_rep, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validar copy
+        run: |
+          grep -Fq 'os dois pontos do posicionamento — o apoio público a Lula e a divulgação de candidaturas' index.html
+          grep -Fq 'previsto no art. 37, II, da Constituição Federal de 1988' index.html
+          grep -Fq 'Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas' index.html
+          ! grep -Fq 'A decisão de manifestar apoio eleitoral foi deliberada pela Comissão' index.html
+
+      - name: Commitar ajuste e remover workflow temporário
+        run: |
+          git config user.name "Nílian Silva"
+          git config user.email "niliancs@gmail.com"
+          rm .github/workflows/ajustar-copy-nota.yml
+          git add index.html .github/workflows/ajustar-copy-nota.yml
+          git commit -m "Ajusta abertura e representatividade da nota eleitoral"
+          git push origin main
