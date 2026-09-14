@@ -1,0 +1,32 @@
+name: Apply candidaturas criteria
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply_candidaturas_criteria.py'
+      - '.github/workflows/apply-candidaturas-criteria.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply criteria update
+        run: python scripts/apply_candidaturas_criteria.py
+      - name: Commit generated page
+        run: |
+          if git diff --quiet -- candidaturas/index.html; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add candidaturas/index.html
+          git commit -m "Clarifica critérios de seleção das candidaturas"
+          git push
