@@ -1,377 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chama + ATPS — Posicionamento eleitoral e documentos</title>
-  <meta name="description" content="Posicionamento eleitoral, fundamentos e atualização do segundo turno — Eleições 2026. Deliberação em 09/09/2026, consulta ao grupo do CR em 11–12/09/2026 e publicação em 13/09/2026.">
-  <!-- SEO/OG: URL canônica de produção -->
-  <link rel="canonical" href="https://chamamais-atps-eleicoes-2026.vercel.app/">
-  <meta property="og:title" content="Chama + ATPS — Posicionamento eleitoral e documentos">
-  <meta property="og:description" content="Posicionamento eleitoral, fontes e atualização do segundo turno em 06/10/2026. Pesquisa de setembro identificada com seu corte original.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://chamamais-atps-eleicoes-2026.vercel.app/">
-  <meta name="twitter:card" content="summary">
-  <link rel="stylesheet" href="assets/styles.css">
-  <style>
-    /* ─── Landing · estilos de página ─────────────────────────── */
 
-    .lp-header {
-      background: var(--cm-card);
-      border-bottom: 1px solid var(--cm-line);
-    }
-    .lp-header .inner {
-      max-width: 720px;
-      margin: auto;
-      padding: 3rem 20px 3.5rem;
-    }
-    @media (min-width: 600px) {
-      .lp-header .inner { padding: 4rem 32px 4.5rem; }
-    }
-    .lp-header h1 {
-      margin: 1rem 0 0;
-      font-size: clamp(1.5rem, 3vw + .75rem, 2.25rem);
-      font-weight: 600;
-      line-height: 1.25;
-      color: var(--cm-navy);
-    }
-    .lp-header .subtitle {
-      margin: 1rem 0 0;
-      font-size: 1rem;
-      color: var(--cm-blue);
-      line-height: 1.6;
-    }
-    @media (min-width: 600px) { .lp-header .subtitle { font-size: 1.125rem; } }
-    .lp-header .dates {
-      margin: 1.25rem 0 0;
-      font-size: .875rem;
-      color: var(--cm-muted);
-    }
-    .lp-header .accent-bar {
-      margin: 2rem 0 0;
-      height: 4px;
-      width: 96px;
-      border-radius: 999px;
-      background: var(--cm-turq);
-    }
-
-    /* ─── Corpo principal ─────────────────────────────────────── */
-    .lp-main {
-      max-width: 720px;
-      margin: auto;
-      padding: 3rem 20px;
-    }
-    @media (min-width: 600px) { .lp-main { padding: 4rem 32px; } }
-
-    /* ─── Nota de esclarecimento ──────────────────────────────── */
-    .nota-heading {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-heading { font-size: 1.5rem; } }
-
-    .nota-subheading {
-      margin: .5rem 0 0;
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--cm-blue);
-    }
-    @media (min-width: 600px) { .nota-subheading { font-size: 1.125rem; } }
-
-    .nota-opening {
-      margin: 2rem 0 0;
-      font-size: 1rem;
-      line-height: 1.75;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-opening { font-size: 1.0625rem; } }
-
-    .nota-intro {
-      margin: 1.5rem 0 0;
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-intro { font-size: 1.0625rem; } }
-
-    .nota-list {
-      list-style: none;
-      margin: 2rem 0 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-    .nota-item {
-      border-left: 2px solid var(--cm-turq);
-      padding-left: 1.25rem;
-    }
-    @media (min-width: 600px) { .nota-item { padding-left: 1.5rem; } }
-    .nota-item h3 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-item h3 { font-size: 1.1875rem; } }
-    .nota-item h3 .num { color: var(--cm-blue); }
-
-    .nota-item .paragraphs {
-      margin: .75rem 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .nota-item p {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1.75;
-      color: var(--cm-navy);
-    }
-    .nota-item ul {
-      margin: .25rem 0;
-      padding-left: .25rem;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: .4rem;
-    }
-    .nota-item ul li {
-      font-size: 1rem;
-      line-height: 1.75;
-      color: var(--cm-navy);
-    }
-
-    .nota-close {
-      margin: 2.5rem 0 0;
-      font-size: 1rem;
-      line-height: 1.75;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-close { font-size: 1.0625rem; } }
-
-    .nota-signature {
-      margin: 2rem 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: .3rem;
-    }
-    .nota-signature p {
-      margin: 0;
-      font-size: .875rem;
-      font-weight: 500;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .nota-signature p { font-size: 1rem; } }
-    .nota-signature .sig-date {
-      font-weight: 400;
-      color: var(--cm-muted);
-    }
-
-
-    /* ─── Consulta ao grupo do CR ─────────────────────────────── */
-    .consulta-box {
-      margin: 2rem 0 0;
-      border-top: 1px solid var(--cm-line);
-      border-bottom: 1px solid var(--cm-line);
-      background: var(--cm-cyan);
-      padding: 1.4rem 1.25rem;
-    }
-    @media (min-width: 600px) { .consulta-box { padding: 1.6rem 1.75rem; } }
-    .consulta-box h3 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--cm-navy); }
-    .consulta-box .consulta-desc, .consulta-box .consulta-limit { margin: .75rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }
-    .consulta-result { padding: 1rem 0; border-bottom: 1px solid var(--cm-line); }
-    .consulta-result:last-of-type { border-bottom: 0; padding-bottom: .25rem; }
-    .consulta-result strong { display: block; color: var(--cm-navy); }
-    .consulta-result .number { margin-top: .35rem; color: var(--cm-blue); font-weight: 600; }
-    .consulta-result p { margin: .3rem 0 0; font-size: .9rem; line-height: 1.65; color: var(--cm-navy); }
-
-    /* ─── Seção de documentos ─────────────────────────────────── */
-    .docs-section { margin-top: 4rem; }
-    @media (min-width: 600px) { .docs-section { margin-top: 5rem; } }
-
-    .docs-section h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .docs-section h2 { font-size: 1.5rem; } }
-
-    .docs-desc {
-      margin: .75rem 0 0;
-      font-size: 1rem;
-      line-height: 1.6;
-      color: var(--cm-muted);
-      max-width: 520px;
-    }
-
-    .doc-list {
-      list-style: none;
-      margin: 2rem 0 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .doc-card {
-      display: block;
-      border: 1px solid var(--cm-line);
-      border-radius: 12px;
-      background: var(--cm-card);
-      padding: 1.25rem;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color .15s;
-    }
-    @media (min-width: 600px) { .doc-card { padding: 1.5rem 1.75rem; } }
-    .doc-card:hover { border-color: var(--cm-blue); }
-    .doc-card:focus-visible {
-      outline: 3px solid var(--cm-yellow);
-      outline-offset: 2px;
-      border-color: var(--cm-blue);
-    }
-
-    .doc-card-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .doc-card h3 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--cm-navy);
-      text-decoration: underline;
-      text-decoration-color: var(--cm-turq);
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
-    }
-    @media (min-width: 600px) { .doc-card h3 { font-size: 1.1875rem; } }
-    .doc-card:hover h3 { color: var(--cm-blue); }
-
-    .doc-arrow {
-      flex-shrink: 0;
-      margin-top: 1px;
-      color: var(--cm-blue);
-      font-size: 1.125rem;
-      line-height: 1;
-    }
-
-    .doc-card .doc-body {
-      margin: .75rem 0 0;
-      font-size: 1rem;
-      line-height: 1.6;
-      color: var(--cm-navy);
-    }
-
-    .doc-card .doc-meta {
-      margin: .875rem 0 0;
-      font-size: .8125rem;
-      font-weight: 500;
-      color: var(--cm-muted);
-    }
-
-    /* ─── Nota metodológica ───────────────────────────────────── */
-    .metodologia-section { margin-top: 4rem; }
-    @media (min-width: 600px) { .metodologia-section { margin-top: 5rem; } }
-
-    .metodologia-section h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .metodologia-section h2 { font-size: 1.5rem; } }
-
-    .metodologia-box {
-      margin: 1.25rem 0 0;
-      border-radius: 12px;
-      background: var(--cm-cyan);
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    @media (min-width: 600px) { .metodologia-box { padding: 1.5rem 1.75rem; } }
-    .metodologia-box p {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1.75;
-      color: var(--cm-navy);
-    }
-    @media (min-width: 600px) { .metodologia-box p { font-size: 1.0625rem; } }
-
-    /* ─── Rodapé ──────────────────────────────────────────────── */
-    .lp-footer {
-      border-top: 1px solid var(--cm-line);
-      background: var(--cm-card);
-    }
-    .lp-footer .inner {
-      max-width: 720px;
-      margin: auto;
-      padding: 2.5rem 20px;
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-    }
-    @media (min-width: 600px) { .lp-footer .inner { padding: 3rem 32px; } }
-    .lp-footer p {
-      margin: 0;
-      font-size: .875rem;
-      line-height: 1.6;
-      color: var(--cm-muted);
-    }
-    @media (min-width: 600px) { .lp-footer p { font-size: 1rem; } }
-    .lp-footer .footer-org {
-      font-weight: 500;
-      color: var(--cm-navy);
-    }
-  </style>
-<link rel="stylesheet" href="assets/brand.css">
-</head>
-<body>
-  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-
-  <nav class="site-nav" aria-label="Navegação do microsite">
-    <div class="nav-inner">
-      <a href="./" class="nav-home" aria-current="page">Chama + ATPS</a>
-      <span class="nav-sep" aria-hidden="true">›</span>
-      <ul class="nav-links" role="list">
-        <li><a href="./apoio-lula/">Por que Lula</a></li>
-        <li><a href="./fundamentos/">Fundamentos</a></li>
-        <li><a href="./candidaturas/">Candidaturas</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <header class="lp-header">
-    <div class="inner">
-      <div class="brand-signature brand-signature--brush brand-signature--hero" role="img" aria-label="Chama + ATPS"><span class="brand-brush-crop" aria-hidden="true"><img src="assets/pincelada_azul_preset.svg" alt=""></span><img class="brand-lettering" src="assets/lettering_chama_atps.svg" alt="" aria-hidden="true"></div>
-      <p class="eyebrow">Eleições 2026</p>
-      <h1>Chama + ATPS — Posicionamento eleitoral e documentos</h1>
-      <p class="subtitle">Nota, fundamentos e atualização documental para o segundo turno de 25/10</p>
-      <p class="dates">Deliberação 09/09 · consulta ao CR 11–12/09 · atualização documental 06/10/2026</p>
-      <div class="accent-bar" aria-hidden="true"></div>
-    </div>
-  </header>
-
-  <main id="conteudo" class="lp-main">
-
-    <!-- ── Nota de esclarecimento ─────────────────────────────── -->
-    <section aria-labelledby="nota-titulo">
-      <div class="brand-heading-accent"><span class="brand-icon brand-icon--megaphone" aria-hidden="true"><span class="brand-megaphone-crop"><img src="assets/megafone_mao.svg" alt=""></span></span><h2 id="nota-titulo" class="nota-heading">Nota de esclarecimento</h2></div>
-      <p class="nota-subheading">Posicionamento eleitoral do #ChamaMaisATPS</p>
-
-      <p class="nota-opening">
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Chama + ATPS — Direitos, políticas sociais e segundo turno</title>
+<meta content="Apoiamos Lula no segundo turno. Confira os fundamentos, quem se elegeu entre os nomes do nosso levantamento e a pauta dos ATPS." name="description"/>
+<link href="https://chamamais-atps-eleicoes-2026.vercel.app/" rel="canonical"/>
+<meta content="Política social precisa de gente. E de escolha política." property="og:title"/>
+<meta content="Segundo turno, direitos, políticas sociais e resultados do nosso levantamento parlamentar. Chama + ATPS." property="og:description"/>
+<meta content="website" property="og:type"/><meta content="https://chamamais-atps-eleicoes-2026.vercel.app/" property="og:url"/>
+<meta content="summary" name="twitter:card"/><link href="assets/styles.css" rel="stylesheet"/><link href="assets/brand.css" rel="stylesheet"/><link href="assets/refresh.css" rel="stylesheet"/>
+</head><body class="home-page"><a class="skip-link" href="#conteudo">Ir para o conteúdo</a><nav aria-label="Navegação principal" class="site-nav"><div class="nav-inner"><a aria-current="page" class="nav-home" href="./">Chama + ATPS</a><ul class="nav-links"><li><a href="./apoio-lula/">Por que Lula</a></li><li><a href="./candidaturas/">Quem se elegeu</a></li><li><a href="./fundamentos/">Fontes e análise</a></li></ul></div></nav>
+<main id="conteudo"><header class="home-hero"><div class="wrap"><div class="hero-top"><p class="eyebrow">Eleições 2026 · Segundo turno · 25 de outubro</p><img alt="Chama + ATPS" class="home-logo" src="assets/assinatura_topo_chama_atps.png"/></div>
+<h1>Política social<br/>precisa de gente.<br/><span>E de escolha política.</span></h1>
+<div class="hero-bottom"><p>Apoiamos Lula porque defendemos democracia, direitos e um Estado com capacidade de fazer as políticas sociais chegarem às pessoas.</p><div class="hero-actions"><a class="btn btn-yellow" href="apoio-lula/">Por que apoiamos Lula <span aria-hidden="true">↗</span></a><a class="btn btn-white" href="candidaturas/">Quem se elegeu <span aria-hidden="true">↗</span></a></div></div>
+</div></header>
+<section aria-labelledby="agora-titulo" class="home-section wrap"><div class="section-heading"><p class="eyebrow">Depois do primeiro turno</p><h2 id="agora-titulo">O voto escolhe.<br/>A gente acompanha e cobra.</h2><p>Lula e Flávio Bolsonaro disputam a Presidência em 25 de outubro. No Legislativo, os eleitos já definem parte do caminho para aprovar leis, disputar orçamento e fiscalizar o governo.</p></div>
+<div class="home-grid"><a class="feature feature-yellow" href="apoio-lula/#segundo-turno"><span class="feature-number">01 / A escolha</span><h3>Direitos precisam<br/>de proteção.</h3><p>Cotas, instituições democráticas e políticas de igualdade entram na comparação entre os projetos de governo.</p><span class="feature-link">Entenda o que está em disputa ↗</span></a>
+<a class="feature feature-cyan" href="candidaturas/"><span class="feature-number">02 / O resultado</span><h3>47 nomes do painel<br/>foram eleitos.</h3><p>45 para a Câmara e 2 para o Senado. Veja o resultado dos 69 nomes pesquisados e os documentos de sua atuação.</p><span class="feature-link">Consulte por estado e resultado ↗</span></a>
+<a class="feature feature-blue" href="fundamentos/#futuro"><span class="feature-number">03 / A nossa pauta</span><h3>Política pública<br/>exige equipe.</h3><p>Defendemos o CF3/500: mais capacidade técnica para formular, acompanhar e avaliar políticas sociais.</p><span class="feature-link">Conheça a análise e as fontes ↗</span></a></div>
+<p class="home-source">Resultados conferidos em 06/10/2026. A contagem se refere ao nosso levantamento, que reúne 69 candidaturas em 18 UFs. <a href="candidaturas/#fontes-resultados">Fontes dos resultados</a>.</p></section>
+<section class="home-position"><div class="wrap position-grid"><div><p class="eyebrow">O que orienta o Chama + ATPS</p><h2>Direitos no papel.<br/>Serviços na vida real.</h2></div><div><p>Uma política social precisa de orçamento, equipes, coordenação e continuidade. É nesse trabalho que entram os Analistas Técnicos de Políticas Sociais.</p><p>Nosso apoio a Lula é uma escolha política fundamentada. A cobrança por serviços, proteção de direitos e convocação do cadastro de reserva continua.</p><p><strong>CF3/500 é uma reivindicação do movimento.</strong> Não há promessa documentada de 500 convocações por qualquer candidatura.</p><a class="text-link" href="fundamentos/">Leia a análise completa e confira as fontes ↗</a></div></div></section>
+<section aria-labelledby="docs-titulo" class="home-section wrap"><div class="section-heading"><p class="eyebrow">Para consultar</p><h2 id="docs-titulo">Uma escolha com fundamentos.</h2></div><div class="doc-grid"><a class="document-card" href="apoio-lula/"><span class="eyebrow">Síntese</span><h3>Por que apoiamos Lula</h3><p>Históricos, propostas e diferenças que pesam na nossa escolha.</p><span aria-hidden="true">↗</span></a><a class="document-card" href="candidaturas/"><span class="eyebrow">Painel</span><h3>Quem se elegeu</h3><p>Resultados, atuação parlamentar e vínculo com a pauta.</p><span aria-hidden="true">↗</span></a><a class="document-card" href="fundamentos/"><span class="eyebrow">Pesquisa</span><h3>Fontes e análise</h3><p>Evidências, limites e pontos que continuamos a cobrar.</p><span aria-hidden="true">↗</span></a></div>
+<details class="institutional-note" id="nota"><summary>Quem se posiciona e como a decisão foi tomada</summary><div class="note-content"><section aria-labelledby="nota-titulo">
+<div class="brand-heading-accent"><span aria-hidden="true" class="brand-icon brand-icon--megaphone"><span class="brand-megaphone-crop"><img alt="" src="assets/megafone_mao.svg"/></span></span><h2 class="nota-heading" id="nota-titulo">Nota de esclarecimento</h2></div>
+<p class="nota-subheading">Posicionamento eleitoral do #ChamaMaisATPS</p>
+<p class="nota-opening">
         A Comissão do Cadastro Reserva de ATPS do CPNU 1, composta por voluntários que atuam de
         forma colegiada na condução do movimento #ChamaMaisATPS, deliberou, em 9 de setembro de 2026,
         após análise dos planos de governo de Lula e Flávio Bolsonaro, tomados como referência no cenário
@@ -384,223 +36,84 @@
         que permanecem no Cadastro Reserva, realizada em 11 e 12 de setembro de 2026 no grupo de WhatsApp
         “Mobilização pelo CF3 – CR ATPS”. Entre os participantes, houve ampla maioria favorável a ambos.
       </p>
-
-      <aside class="consulta-box" aria-labelledby="consulta-titulo">
-        <h3 id="consulta-titulo">Consulta ao grupo do CR</h3>
-        <p class="consulta-desc">A consulta ocorreu voluntariamente durante 24 horas, em 11–12/09/2026, no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no cadastro de reserva.</p>
-        <div class="consulta-result">
-          <strong>Apoio público a Lula</strong>
-          <div class="number">95,1% dos participantes foram favoráveis</div>
-          <p>à manifestação pública de apoio à candidatura de Lula à Presidência da República.</p>
-        </div>
-        <div class="consulta-result">
-          <strong>Divulgação de candidaturas parlamentares</strong>
-          <div class="number">90,3% dos participantes foram favoráveis</div>
-          <p>à divulgação de candidaturas selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>
-        </div>
-        <p class="consulta-limit">Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade do posicionamento da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o cadastro de reserva.</p>
-      </aside>
-
-      <p class="nota-intro">Esclarecemos que:</p>
-
-      <ol class="nota-list">
-
-        <li class="nota-item">
-          <h3><span class="num">1.</span> Representatividade</h3>
-          <div class="paragraphs">
-            <p>O posicionamento é da Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do movimento #ChamaMaisATPS. A consulta posterior reforça sua legitimidade entre as pessoas que participaram, sem transformá-lo em manifestação institucional de todo o cadastro de reserva, de toda a carreira de ATPS, do MGI ou da ANDEPS, nem substituir as escolhas políticas individuais de seus integrantes. Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas e não pressupõem unanimidade nem representatividade estatística de todo o cadastro de reserva.</p>
-          </div>
-        </li>
-
-        <li class="nota-item">
-          <h3><span class="num">2.</span> Fundamentação</h3>
-          <div class="paragraphs">
-            <p>A posição adotada é acompanhada de documentação pública que permite compreender
+<aside aria-labelledby="consulta-titulo" class="consulta-box">
+<h3 id="consulta-titulo">Consulta ao grupo do CR</h3>
+<p class="consulta-desc">A consulta ocorreu voluntariamente durante 24 horas, em 11–12/09/2026, no grupo “Mobilização pelo CF3 – CR ATPS”, formado por pessoas que permanecem no cadastro de reserva.</p>
+<div class="consulta-result">
+<strong>Apoio público a Lula</strong>
+<div class="number">95,1% dos participantes foram favoráveis</div>
+<p>à manifestação pública de apoio à candidatura de Lula à Presidência da República.</p>
+</div>
+<div class="consulta-result">
+<strong>Divulgação de candidaturas parlamentares</strong>
+<div class="number">90,3% dos participantes foram favoráveis</div>
+<p>à divulgação de candidaturas selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>
+</div>
+<p class="consulta-limit">Os resultados registram a manifestação das pessoas que participaram voluntariamente e reforçam a legitimidade do posicionamento da Comissão, sem pressupor unanimidade ou representatividade estatística de todo o cadastro de reserva.</p>
+</aside>
+<p class="nota-intro">Esclarecemos que:</p>
+<ol class="nota-list">
+<li class="nota-item">
+<h3><span class="num">1.</span> Representatividade</h3>
+<div class="paragraphs">
+<p>O posicionamento é da Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do movimento #ChamaMaisATPS. A consulta posterior reforça sua legitimidade entre as pessoas que participaram, sem transformá-lo em manifestação institucional de todo o cadastro de reserva, de toda a carreira de ATPS, do MGI ou da ANDEPS, nem substituir as escolhas políticas individuais de seus integrantes. Os percentuais divulgados referem-se exclusivamente às pessoas que participaram voluntariamente das consultas e não pressupõem unanimidade nem representatividade estatística de todo o cadastro de reserva.</p>
+</div>
+</li>
+<li class="nota-item">
+<h3><span class="num">2.</span> Fundamentação</h3>
+<div class="paragraphs">
+<p>A posição adotada é acompanhada de documentação pública que permite compreender
             os critérios utilizados pela Comissão.</p>
-          </div>
-        </li>
-
-        <li class="nota-item">
-          <h3><span class="num">3.</span> Verificação e transparência</h3>
-          <div class="paragraphs">
-            <p>Os materiais disponibilizados distinguem fatos documentados, cálculos, hipóteses,
+</div>
+</li>
+<li class="nota-item">
+<h3><span class="num">3.</span> Verificação e transparência</h3>
+<div class="paragraphs">
+<p>Os materiais disponibilizados distinguem fatos documentados, cálculos, hipóteses,
             propostas eleitorais e conclusões políticas. Sempre que possível, as informações são
             acompanhadas de fonte, data de consulta e indicação dos limites da evidência disponível.</p>
-          </div>
-        </li>
-
-        <li class="nota-item">
-          <h3><span class="num">4.</span> Levantamento parlamentar e apoio eleitoral</h3>
-          <div class="paragraphs">
-            <p>A consulta registrou maioria favorável à possibilidade de o movimento divulgar candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>
-            <p>O levantamento de candidaturas reúne informações sobre parlamentares e demais
+</div>
+</li>
+<li class="nota-item">
+<h3><span class="num">4.</span> Levantamento parlamentar e apoio eleitoral</h3>
+<div class="paragraphs">
+<p>A consulta registrou maioria favorável à possibilidade de o movimento divulgar candidaturas parlamentares selecionadas segundo critérios públicos e verificáveis relacionados às políticas sociais, ao serviço público, ao concurso público e à atuação concreta em defesa da pauta.</p>
+<p>O levantamento de candidaturas reúne informações sobre parlamentares e demais
             candidaturas que tiveram atuação documentada relacionada à carreira de ATPS, ao cadastro
             reserva, ao CPNU, ao serviço público, a políticas sociais ou a temas correlatos.</p>
-            <p>A presença de uma pessoa no levantamento não significa, por si só, endosso eleitoral.</p>
-            <p>Quando houver apoio político expresso pela Comissão a determinada candidatura, essa
+<p>A presença de uma pessoa no levantamento não significa, por si só, endosso eleitoral.</p>
+<p>Quando houver apoio político expresso pela Comissão a determinada candidatura, essa
             informação deverá ser apresentada de forma explícita, separada do registro factual de
             atuação parlamentar ou institucional.</p>
-          </div>
-        </li>
-
-        <li class="nota-item">
-          <h3><span class="num">5.</span> Limites do apoio e autonomia da pauta institucional</h3>
-          <div class="paragraphs">
-            <p>O posicionamento eleitoral da <strong>Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do Movimento #ChamaMaisATPS</strong>, decorre de avaliação política e programática construída a partir de critérios públicos, do histórico das candidaturas e de suas posições sobre políticas sociais, capacidade estatal e serviço público.</p>
-            <p>Ele não resulta de promessa, compromisso ou negociação de nomeações, nem condiciona o apoio expresso pela Comissão à obtenção de qualquer vantagem para integrantes do cadastro de reserva.</p>
-            <p><strong>Apoio eleitoral não constitui garantia, promessa ou acordo de convocação, nomeação ou provimento de cargos.</strong></p>
-            <p>Expectativas do cadastro de reserva não podem e não serão apresentadas como compromissos assumidos por candidaturas sem documentação que os comprove.</p>
-            <p>A defesa do provimento da carreira de ATPS é uma agenda institucional anterior ao processo eleitoral, sustentada por dados, documentos oficiais e necessidades de força de trabalho identificadas na Administração Pública. Essa pauta continuará sendo defendida institucionalmente perante os Poderes Públicos, independentemente do calendário eleitoral.</p>
-          </div>
-        </li>
-
-        <li class="nota-item">
-          <h3><span class="num">6.</span> Caráter voluntário da manifestação</h3>
-          <div class="paragraphs">
-            <p>A manifestação eleitoral é voluntária e não envolve pagamento, contratação,
+</div>
+</li>
+<li class="nota-item">
+<h3><span class="num">5.</span> Limites do apoio e autonomia da pauta institucional</h3>
+<div class="paragraphs">
+<p>O posicionamento eleitoral da <strong>Comissão do Cadastro Reserva de ATPS do CPNU 1, no âmbito do Movimento #ChamaMaisATPS</strong>, decorre de avaliação política e programática construída a partir de critérios públicos, do histórico das candidaturas e de suas posições sobre políticas sociais, capacidade estatal e serviço público.</p>
+<p>Ele não resulta de promessa, compromisso ou negociação de nomeações, nem condiciona o apoio expresso pela Comissão à obtenção de qualquer vantagem para integrantes do cadastro de reserva.</p>
+<p><strong>Apoio eleitoral não constitui garantia, promessa ou acordo de convocação, nomeação ou provimento de cargos.</strong></p>
+<p>Expectativas do cadastro de reserva não podem e não serão apresentadas como compromissos assumidos por candidaturas sem documentação que os comprove.</p>
+<p>A defesa do provimento da carreira de ATPS é uma agenda institucional anterior ao processo eleitoral, sustentada por dados, documentos oficiais e necessidades de força de trabalho identificadas na Administração Pública. Essa pauta continuará sendo defendida institucionalmente perante os Poderes Públicos, independentemente do calendário eleitoral.</p>
+</div>
+</li>
+<li class="nota-item">
+<h3><span class="num">6.</span> Caráter voluntário da manifestação</h3>
+<div class="paragraphs">
+<p>A manifestação eleitoral é voluntária e não envolve pagamento, contratação,
             impulsionamento pago ou qualquer forma de contraprestação por parte de candidaturas,
             partidos, federações ou coligações.</p>
-          </div>
-        </li>
-
-      </ol>
-
-      <p class="nota-close">
+</div>
+</li>
+</ol>
+<p class="nota-close">
         A finalidade desta nota é dar publicidade à decisão do colegiado e à consulta posterior, delimitar quem ela representa, permitir que os fundamentos sejam verificados e preservar a autonomia de cada pessoa para formar sua própria posição.
       </p>
-
-      <div class="nota-signature">
-        <p>Comissão do Cadastro Reserva de ATPS do CPNU 1</p>
-        <p>Movimento #ChamaMaisATPS</p>
-        <p class="sig-date">Publicada em 13 de setembro de 2026</p>
-      </div>
-    </section>
-
-    <!-- Atualização documental do segundo turno · 06/10/2026 -->
-    <section class="docs-section" id="segundo-turno" aria-labelledby="segundo-turno-titulo">
-      <p class="eyebrow">Atualização documental · 06/10/2026</p>
-      <h2 id="segundo-turno-titulo">O segundo turno também decide os rumos das políticas sociais</h2>
-      <p>Lula e Flávio Bolsonaro disputarão a Presidência em 25 de outubro. Este acréscimo atualiza a análise publicada em setembro; os indicadores históricos e o levantamento parlamentar abaixo conservam suas datas de corte originais. <a href="https://www.tse.jus.br/comunicacao/noticias/2026/Outubro/flavio-bolsonaro-e-lula-vao-disputar-o-2o-turno-para-a-presidencia-da-republica" target="_blank" rel="noopener noreferrer">Resultado do primeiro turno no TSE</a> · <a href="https://www.tse.jus.br/comunicacao/noticias/2026/Marco/eleicoes-2026-confira-as-principais-datas-do-calendario-eleitoral" target="_blank" rel="noopener noreferrer">Calendário eleitoral</a>.</p>
-      <p>Em 6 de outubro, Flávio defendeu usar o novo Congresso para <strong>mudar a Constituição</strong>. A declaração divulgada não especifica uma nova Constituição ou Assembleia Constituinte. O programa registrado no TSE já propunha rever competências do STF e o acesso a ações de controle constitucional. Mudanças por emenda exigem três quintos em dois turnos em cada Casa e respeitam limites constitucionais. <a href="https://www.cnnbrasil.com.br/eleicoes/flavio-diz-que-usara-maioria-no-congresso-para-mudar-constituicao/" target="_blank" rel="noopener noreferrer">Declaração de 06/10</a> · <a href="https://www.tse.jus.br/eleicoes/eleicoes-2026-content/arquivos/proposta-pl" target="_blank" rel="noopener noreferrer">Plano de Flávio, pp. 65–66</a> · <a href="https://www2.camara.leg.br/legin/fed/consti/1988/constituicao-1988-5-outubro-1988-322142-normaatualizada-pl.html" target="_blank" rel="noopener noreferrer">Constituição, art. 60</a>.</p>
-      <p><strong>Cotas são um ponto concreto de divergência.</strong> Como senador, Flávio propôs substituir reservas por grupo nas universidades por cotas de renda e votou contra a atualização aprovada em 2023. Em 2024, apresentou alternativa baseada em renda para concursos federais e votou contra o texto que ampliava a reserva para pessoas negras, indígenas e quilombolas. A legislação vigente não deixa de valer por causa da eleição. <a href="https://www12.senado.leg.br/noticias/materias/2023/10/24/senado-aprova-atualizacao-da-lei-de-cotas" target="_blank" rel="noopener noreferrer">Senado: cotas no ensino</a> · <a href="https://www25.senado.leg.br/web/atividade/materias/-/materia/148596" target="_blank" rel="noopener noreferrer">Senado: PL 1958/2021 e votações</a> · <a href="https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15142.htm" target="_blank" rel="noopener noreferrer">Lei 15.142/2025</a>.</p>
-      <p>Para quem defende a carreira de ATPS, o risco não se resume ao número de chamamentos: importa <strong>quais direitos, equipes e políticas</strong> serão sustentados. A carreira atua legalmente em direitos humanos, igualdade racial, proteção de crianças, pessoas com deficiência e povos indígenas, além do SUS e do SUAS. O CF3/500 continua sendo uma reivindicação sujeita a decisão, orçamento e prazo, sob qualquer governo. <a href="https://www.gov.br/servidor/pt-br/acesso-a-informacao/servidor/carreiras/atps/analista_tecnico_de_politicas_sociais" target="_blank" rel="noopener noreferrer">Atribuições de ATPS</a> · <a href="./fundamentos/#segundo-turno">Leia a análise completa e seus limites</a>.</p>
-    </section>
-
-    <!-- ── Documentos públicos ────────────────────────────────── -->
-    <section class="docs-section" aria-labelledby="docs-titulo">
-      <h2 id="docs-titulo">Documentos públicos</h2>
-      <p class="docs-desc">
-        Materiais utilizados para fundamentar e tornar verificável o posicionamento da Comissão.
-      </p>
-
-      <ul class="doc-list">
-        <li>
-          <a class="doc-card" href="./apoio-lula/">
-            <div class="doc-card-head">
-              <h3>Por que apoiamos a candidatura de Lula</h3>
-              <span class="doc-arrow" aria-hidden="true">→</span>
-            </div>
-            <p class="doc-body">
-              Síntese visual dos principais fundamentos do apoio, com comparação de históricos,
-              indicadores, propostas de 2026 e ressalvas críticas.
-            </p>
-            <p class="doc-meta">Infográfico · corte original 10/09 · atualização 06/10/2026</p>
-          </a>
-        </li>
-        <li>
-          <a class="doc-card" href="./fundamentos/">
-            <div class="doc-card-head">
-              <h3>Dossiê de fundamentos do apoio a Lula</h3>
-              <span class="doc-arrow" aria-hidden="true">→</span>
-            </div>
-            <p class="doc-body">
-              Pesquisa documental completa que sustenta o infográfico, com matriz de evidências,
-              fontes, cálculos, ressalvas e registro das lacunas encontradas.
-            </p>
-            <p class="doc-meta">Dossiê · corte original 10/09 · atualização 06/10/2026</p>
-          </a>
-        </li>
-        <li>
-          <a class="doc-card" href="./candidaturas/">
-            <div class="doc-card-head">
-              <h3>Candidaturas e atuação parlamentar — Eleições 2026</h3>
-              <span class="doc-arrow" aria-hidden="true">→</span>
-            </div>
-            <p class="doc-body">
-              Levantamento de candidaturas e atos parlamentares anterior ao primeiro turno, com
-              fonte, data e link para cada informação. Não indica quem foi eleito em 04/10.
-            </p>
-            <p class="doc-meta">
-              Arquivo do primeiro turno · 69 candidaturas · 18 UFs · corte factual 10/09/2026
-            </p>
-          </a>
-        </li>
-      </ul>
-
-      <div style="margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--cm-line);">
-        <h3 style="margin:0;font-size:1.1rem;font-weight:600;color:var(--cm-navy);">Fontes primárias — planos de governo</h3>
-        <p class="docs-desc" style="margin-top:.6rem;">Documentos de referência das candidaturas utilizados na análise do posicionamento.</p>
-
-        <ul class="doc-list" style="margin-top:1.25rem;">
-          <li>
-            <a class="doc-card" href="https://drive.google.com/file/d/1ruX45Z09uhSPNebIKXBvZ5qLYfPJKNKO/view" target="_blank" rel="noopener noreferrer">
-              <div class="doc-card-head">
-                <h3>Programa de Governo — Lula · Eleições 2026</h3>
-                <span class="doc-arrow" aria-hidden="true">↗</span>
-              </div>
-              <p class="doc-body">Documento apresentado pela candidatura para as Eleições 2026.</p>
-              <p class="doc-meta">PDF para consulta · documento da candidatura · origem: TSE Dados Abertos</p>
-            </a>
-          </li>
-          <li>
-            <a class="doc-card" href="https://drive.google.com/file/d/12qZqODh8K7D4fxEDQ0zt2F8Hby7-0Prv/view" target="_blank" rel="noopener noreferrer">
-              <div class="doc-card-head">
-                <h3>Diretrizes do Plano de Governo 2027–2030 — Flávio Bolsonaro</h3>
-                <span class="doc-arrow" aria-hidden="true">↗</span>
-              </div>
-              <p class="doc-body">Documento apresentado pela candidatura para as Eleições 2026.</p>
-              <p class="doc-meta">PDF para consulta · documento da candidatura · origem: TSE Dados Abertos</p>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ── Nota metodológica ──────────────────────────────────── -->
-    <section class="metodologia-section" aria-labelledby="metodologia-titulo">
-      <h2 id="metodologia-titulo">Nota metodológica</h2>
-      <div class="metodologia-box">
-        <p>
-          <strong>Fato</strong> é tratado como informação documentada por fonte identificável.
-          <strong>Proposta eleitoral</strong> é compromisso declarado por uma candidatura e não
-          deve ser apresentada como resultado já realizado.
-        </p>
-        <p>
-          <strong>Apoio político</strong> é uma conclusão da Comissão e não deve ser confundido
-          com o conteúdo da fonte utilizada para fundamentá-lo.
-        </p>
-        <p>
-          Nos levantamentos parlamentares, distinguimos sempre que possível apoio declarado,
-          compromisso, autoria ou coautoria de ato formal, subscrição, atuação administrativa e
-          participação em eventos. Essas categorias não são equivalentes entre si.
-        </p>
-        <p>
-          A consulta sobre candidaturas parlamentares refere-se à divulgação segundo critérios
-          públicos e verificáveis, não à aprovação automática de cada nome presente no painel.
-        </p>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="lp-footer">
-    <div class="inner">
-      <div class="brand-signature brand-signature--brush brand-signature--small brand-signature--footer" aria-hidden="true"><span class="brand-brush-crop"><img src="assets/pincelada_azul_preset.svg" alt=""></span><img class="brand-lettering" src="assets/lettering_chama_atps.svg" alt=""></div>
-      <p class="footer-org">Comissão do Cadastro Reserva de ATPS do CPNU 1 · Movimento #ChamaMaisATPS</p>
-      <p>Deliberação: 09/09/2026 · Consulta ao grupo do CR: 11–12/09/2026 · Publicação: 13/09/2026</p>
-      <p>Última atualização: 13/09/2026 · Conteúdo sujeito a atualização quando houver nova evidência documentada.</p>
-    </div>
-  </footer>
-
-</body>
-</html>
+<div class="nota-signature">
+<p>Comissão do Cadastro Reserva de ATPS do CPNU 1</p>
+<p>Movimento #ChamaMaisATPS</p>
+<p class="sig-date">Publicada em 13 de setembro de 2026</p>
+</div>
+</section></div></details>
+<p class="method-short">Distinguimos fatos, propostas eleitorais e análise política. Indicadores históricos mantêm suas datas de referência. Conteúdo produzido com apoio de IA e revisão humana, com fontes identificadas.</p></section>
+</main><footer class="home-footer"><div class="wrap"><img alt="Chama + ATPS" src="assets/selo_rodape_chama_atps_v4.webp"/><p>Comissão do Cadastro Reserva de ATPS do CPNU 1 · Movimento #ChamaMaisATPS<br/>Posicionamento da Comissão, sem representação institucional do MGI ou da ANDEPS.<br/><small>Nota publicada em 13/09/2026 · Site atualizado em 06/10/2026</small></p><a href="#conteudo">Voltar ao topo ↑</a></div></footer></body></html>
