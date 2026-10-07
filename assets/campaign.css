@@ -143,3 +143,30 @@
  .campaign-hero-grid,.campaign-position-grid,.campaign-demand,.campaign-congress-grid{grid-template-columns:1fr 1fr;gap:24px}
  .campaign-scenes article,.campaign-choice,.campaign-demand-note{break-inside:avoid}
 }
+/* Remove layouts inherited from the candidacy-promotion stage. */
+.campaign-demand-simple{grid-template-columns:1fr;max-width:900px;margin-inline:auto;padding-block:48px}
+.campaign-demand-simple>div{max-width:70ch}
+.campaign-stakes{padding-block:48px}
+.campaign-stakes .campaign-intro{margin-bottom:0}
+.campaign-congress-simple{grid-template-columns:1fr;gap:0}
+.campaign-congress-simple h2{max-width:none}
+.campaign-congress{padding-block:36px}
+.campaign-share-inline{padding-block:24px;display:flex;gap:20px;align-items:center}
+.campaign-share-inline .campaign-button{background:var(--cm-blue);color:#fff;width:260px;flex-shrink:0}
+.campaign-share-inline .campaign-small{margin:0}
+.results-page .results-hero-simple{grid-template-columns:1fr;gap:0}
+.results-page .hero{padding-block:24px}
+.results-page .filter-grid{grid-template-columns:2fr 1fr 1.5fr 1fr}
+.results-page .filter-panel{margin-top:26px}
+.results-page #fontes-resultados{padding-block:20px}
+.support-page .support-hero-simple{grid-template-columns:1fr;padding-block:26px!important;min-height:0}
+.support-page .support-hero-simple h1{font-size:clamp(2.2rem,4vw,3.5rem);margin-bottom:18px}
+.support-page .support-hero-simple .brand-signature{float:right;margin-bottom:0;width:155px!important}
+@media(max-width:650px){
+ .campaign-share-inline{display:block}
+ .campaign-share-inline .campaign-button{width:100%}
+ .campaign-share-inline .campaign-small{margin-top:10px}
+ .results-page .filter-grid{grid-template-columns:1fr 1fr}
+ .results-page .filter-grid>label:first-child{grid-column:1/-1}
+ .support-page .support-hero-simple .brand-signature{float:none}
+}
