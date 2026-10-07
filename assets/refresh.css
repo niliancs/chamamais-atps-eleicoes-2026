@@ -197,3 +197,8 @@ th{background:var(--cm-cyan)!important;color:var(--cm-navy)!important}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.feature,.btn{transition:none;transform:none!important}}
 @media print{body{background:#fff!important}.home-hero,.hero,.report-head,.closing,.home-position{background:#fff!important;color:var(--cm-navy)!important}.home-hero h1{color:var(--cm-navy)}.site-nav,.hero-actions,.topnav,.jump{display:none!important}.home-grid,.doc-grid{grid-template-columns:1fr 1fr}.feature{min-height:0;break-inside:avoid}.cards{grid-template-columns:1fr 1fr}.candidate{break-inside:avoid}.home-section{padding:20px 0}.home-footer{background:white}.compact-context{break-inside:avoid}}
+
+.support-page .hero h1{font-size:clamp(2.6rem,5vw,4.25rem)}
+.seal .refs,.seal .refs a{color:var(--cm-navy)!important}
+.home-transparency{padding-block:26px}.home-transparency .institutional-note{margin-top:0}
+@media(max-width:650px){.support-page .hero h1{font-size:2.5rem}.home-transparency{padding-block:24px}}
